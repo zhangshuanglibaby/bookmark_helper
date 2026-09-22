@@ -25,6 +25,15 @@ const manifest: ManifestV3Export = {
     // 指定侧边栏要加载的 HTML 入口文件。
     default_path: "src/side-panel/index.html",
   },
+  // 配置扩展的后台 Service Worker。
+  background: {
+    // 指向后台程序的入口文件。
+    // Chrome 会在需要处理扩展事件时启动它。
+    service_worker: "src/background/service-worker.ts",
+
+    // 表示后台文件使用现代 JavaScript 模块写法，可以使用 import。
+    type: "module",
+  },
   // 浏览器工具栏中扩展图标的基础配置。
   action: {
     // 鼠标悬停在扩展图标上时显示的文字。
