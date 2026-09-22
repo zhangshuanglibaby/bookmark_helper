@@ -99,3 +99,88 @@ export async function readAllBookmarks(): Promise<BookmarkRecord[]> {
   // 返回全部读取到的网页收藏。
   return records;
 }
+
+
+// 判断一条收藏是否已经超过指定天数。
+/**
+ * 
+ * @param bookmark 收藏记录
+ * @param ageDays 指定天数
+ * @returns 是否超过指定天数
+ */
+function isOlderThan(bookmark: BookmarkRecord, ageDays: number): boolean {
+  // 没有收藏时间时，无法判断它是否超过指定天数。
+  // 因此暂时不将它放入考古清单。
+  if (bookmark.dateAdded === null) {
+    return false;
+  }
+
+  // 将“天数”转换为毫秒。
+  // 1 天 = 24 小时，每小时 60 分钟，每分钟 60 秒，每秒 1000 毫秒。
+  const ageInMilliseconds = ageDays * 24 * 60 * 60 * 1000;
+
+  // 计算“早于这个时间的收藏就算旧收藏”的时间点。
+  const cutoffTime = Date.now() - ageInMilliseconds;
+
+  // 收藏时间早于临界时间，说明它已经超过指定天数。
+  return bookmark.dateAdded < cutoffTime;
+}
+
+
+// 按“最近访问时间最早”的规则排序收藏。
+/**
+ * 
+ * @param firstBookmark 第一条收藏
+ * @param secondBookmark 第二条收藏
+ * @returns 排序结果，负数表示 firstBookmark 排在 secondBookmark 之前，正数表示 firstBookmark 排在 secondBookmark 之后，0 表示两者相等
+ */
+function sortByOldestVisit(
+  firstBookmark: BookmarkRecord,
+  secondBookmark: BookmarkRecord,
+): number {
+  // 取出第一条收藏的最近访问时间。
+  // 没有最近访问时间时，使用收藏时间作为排序依据。
+  const firstTime =
+    firstBookmark.dateLastUsed ?? firstBookmark.dateAdded;
+
+  // 取出第二条收藏的最近访问时间。
+  // 没有最近访问时间时，使用收藏时间作为排序依据。
+  const secondTime =
+    secondBookmark.dateLastUsed ?? secondBookmark.dateAdded;
+
+  // 如果第一条连收藏时间都没有，将它排在后面。
+  if (firstTime === null) {
+    return 1;
+  }
+
+  // 如果第二条连收藏时间都没有，将它排在后面。
+  if (secondTime === null) {
+    return -1;
+  }
+
+  // 时间数字较小代表时间更早，因此排在前面。
+  return firstTime - secondTime;
+}
+
+
+// 从全部收藏中筛选出需要整理的“考古清单”。
+/**
+ * 
+ * @param records 全部收藏记录
+ * @param ageDays 指定天数
+ * @returns 考古清单
+ */
+export function getArchaeologyBookmarks(
+  records: BookmarkRecord[],
+  ageDays: number = 180,
+): BookmarkRecord[] {
+  return (
+    records
+      // 已删除的收藏不应再次出现在清单中。
+      .filter((bookmark) => bookmark.status !== "deleted")
+      // 只保留收藏时间超过指定天数的收藏。
+      .filter((bookmark) => isOlderThan(bookmark, ageDays))
+      // sort 会修改原数组，因此先用展开运算符复制一份数组，再排序。
+      .toSorted(sortByOldestVisit)
+  )
+}
