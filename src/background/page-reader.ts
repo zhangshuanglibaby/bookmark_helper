@@ -66,8 +66,12 @@ export function extractPageContent(): PageContent {
 }
 
 // 将 extractPageContent 函数注入指定标签页，并取得网页内容。
+/**
+ * 
+ * @param tabId 需要等待的标签页 ID。
+ * @returns 从网页中读取到的标题、描述、关键词、正文和网址。
+ */
 export async function readPageContentFromTab(
-  // tabId 是 Chrome 为目标标签页分配的数字 ID。
   tabId: number,
 ): Promise<PageContent> {
   // 向指定标签页的主页面注入 extractPageContent 函数。
@@ -91,4 +95,103 @@ export async function readPageContentFromTab(
 
   // 返回从网页中读取到的标题、描述、关键词、正文和网址。
   return pageContent;
+}
+
+/**
+ * 
+ * 网页的加载状态会通过 chrome.tabs.onUpdated 事件变化；当 changeInfo.status 变成 "complete"，就表示该标签页完成加载。
+ */
+/**
+ * 
+ * @param tabId 需要等待的标签页 ID。
+ * @param timeoutMilliseconds 最长等待时间，单位为毫秒。
+ * @returns 
+ */
+// 等待指定标签页完成加载。
+function waitForTabComplete(
+  tabId: number,
+  timeoutMilliseconds: number = 20_000,
+): Promise<void> {
+  // 返回一个 Promise，让外部代码能够使用 await 等待加载结果。
+  return new Promise((resolve, reject) => {
+    // 用来记录这个等待流程是否已经结束。
+    let isFinished = false;
+
+    // 清理事件监听器和计时器，避免它们继续占用资源。
+    function cleanup() {
+      // 停止监听所有标签页的更新事件。
+      chrome.tabs.onUpdated.removeListener(handleTabUpdated);
+
+      // 停止超时计时器。
+      clearTimeout(timeoutId);
+    }
+
+    // 统一结束等待流程。
+    // 传入 error 表示失败；没有 error 表示成功。
+    function finish(error?: Error) {
+      // 避免网页完成和超时同时发生时，重复执行结束逻辑。
+      if (isFinished) {
+        return;
+      }
+      // 标记为已结束。
+      isFinished = true;
+
+      // 清理不再需要的监听器和计时器。
+      cleanup();
+
+      // 有错误时，让 Promise 进入失败状态。
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      // 没有错误时，让 Promise 进入成功状态。
+      resolve();
+    }
+
+    // 监听所有标签页的更新。
+    function handleTabUpdated(
+      // 本次发生变化的标签页 ID。
+      updatedTabId: number,
+
+      // 我们目前只关心标签页的加载状态。
+      changeInfo: {
+        // 标签页加载时是 loading，加载完成时是 complete。
+        status?: string;
+      }
+    ) {
+      // 只关心我们正在等待的那一个标签页。
+      if (updatedTabId !== tabId) {
+        return;
+      }
+      // 当标签页状态变成 complete，表示网页已加载完成。
+      if (changeInfo.status === "complete") {
+        finish();
+      }
+    }
+
+    // 开始监听标签页更新事件。
+    chrome.tabs.onUpdated.addListener(handleTabUpdated);
+
+    // 启动超时计时器。
+    const timeoutId = setTimeout(() => {
+      // 超过指定时间仍未加载完成，则结束并返回超时错误。
+      finish(new Error("网页加载超时"));
+    }, timeoutMilliseconds);
+
+    // 额外检查一次当前标签页状态。
+    // 避免网页恰好在事件监听开始前就已经加载完成。
+    chrome.tabs
+      .get(tabId)
+      .then((tab) => {
+        // 已经是 complete 时，立即结束等待。
+        if (tab.status === "complete") {
+          finish();
+        }
+      })
+      .catch(() => {
+        // 如果标签页已经不存在，结束并返回错误。
+        finish(new Error("临时标签页已关闭"));
+      });
+  });
 }
