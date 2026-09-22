@@ -1,6 +1,9 @@
 // 引入一条收藏记录的数据类型。
 import type { BookmarkRecord } from "../shared/types";
 
+// 引入侧边栏发送给后台的消息类型。
+import type { ExtensionMessage } from "../shared/messages";
+
 // 定义这个组件需要接收的数据。
 interface BookmarkItemProps {
   // 需要展示的单条收藏。
@@ -54,6 +57,26 @@ function BookmarkItem({ bookmark }: BookmarkItemProps) {
   const displayTime =
     bookmark.dateLastUsed ?? bookmark.dateAdded;
 
+  // 用户点击“打开网页”按钮时执行这个函数。
+  function handleOpenBookmark() {
+    // 创建发送给后台的消息。
+    const message: ExtensionMessage = {
+      // 告诉后台：需要打开一条收藏。
+      type: "OPEN_BOOKMARK",
+
+      // 将当前收藏的网址交给后台。
+      url: bookmark.url,
+    };
+
+    // 将消息发送给后台 Service Worker。
+    chrome.runtime.sendMessage(message).catch((error) => {
+      // 如果消息发送失败，在侧边栏的控制台输出错误。
+      console.error("请求打开网页失败：", error);
+    });
+  }
+
+
+
   return (
     // article 表示一条独立、完整的收藏内容。
     <article>
@@ -68,6 +91,14 @@ function BookmarkItem({ bookmark }: BookmarkItemProps) {
 
       {/* 显示最近访问时间或收藏时间。 */}
       <p>最近记录时间：{formatBookmarkDate(displayTime)}</p>
+
+      {/* 放置这条收藏可执行操作的区域。 */}
+      <div className="bookmark-actions">
+        {/* 点击后请求后台在新标签页打开当前收藏。 */}
+        <button type="button" onClick={handleOpenBookmark}>
+          打开网页
+        </button>
+      </div>
     </article>
   );
 }
