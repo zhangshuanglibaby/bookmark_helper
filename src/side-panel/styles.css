@@ -119,3 +119,50 @@
     /* 过长的网址或文件夹名称可以自动换行。 */
     overflow-wrap: anywhere;
   }
+
+  /* 设置每条收藏底部操作区域的布局。 */
+.bookmark-actions {
+    /* 让按钮与上方内容保持间距。 */
+    margin-top: 12px;
+  
+    /* 使用弹性布局，方便后续添加删除按钮。 */
+    display: flex;
+  
+    /* 让当前的“打开网页”按钮靠右显示。 */
+    justify-content: flex-end;
+  }
+  
+  /* 设置“打开网页”按钮的基础样式。 */
+  .bookmark-actions button {
+    /* 设置按钮内部留白。 */
+    padding: 7px 12px;
+  
+    /* 设置按钮边框。 */
+    border: 1px solid #2468d9;
+  
+    /* 设置较小圆角，保持工具型界面的紧凑感。 */
+    border-radius: 6px;
+  
+    /* 设置按钮背景色。 */
+    background: #2468d9;
+  
+    /* 设置按钮文字颜色。 */
+    color: #ffffff;
+  
+    /* 设置按钮文字字号。 */
+    font-size: 13px;
+  
+    /* 鼠标放上去时显示可点击的手形指针。 */
+    cursor: pointer;
+  }
+  
+  /* 鼠标悬停在按钮上时，稍微加深背景色。 */
+  .bookmark-actions button:hover {
+    background: #1d57b5;
+  }
+  
+  /* 使用键盘选中按钮时，显示清晰的焦点轮廓。 */
+  .bookmark-actions button:focus-visible {
+    outline: 2px solid #7ca9f7;
+    outline-offset: 2px;
+  }
