@@ -64,3 +64,31 @@ export function extractPageContent(): PageContent {
     url: location.href,
   };
 }
+
+// 将 extractPageContent 函数注入指定标签页，并取得网页内容。
+export async function readPageContentFromTab(
+  // tabId 是 Chrome 为目标标签页分配的数字 ID。
+  tabId: number,
+): Promise<PageContent> {
+  // 向指定标签页的主页面注入 extractPageContent 函数。
+  const injectionResults = await chrome.scripting.executeScript({
+    // 指定需要注入脚本的目标标签页。
+    target: {
+      tabId,
+    },
+
+    // 指定要在网页中执行的函数。
+    func: extractPageContent,
+  });
+
+  // 默认只读取主页面，因此结果数组的第一项就是我们需要的结果。
+  const pageContent = injectionResults[0]?.result as PageContent | undefined;
+
+  // 没有拿到结果时，主动抛出错误，方便后续统一处理。
+  if (!pageContent) {
+    throw new Error("未能提取网页内容");
+  }
+
+  // 返回从网页中读取到的标题、描述、关键词、正文和网址。
+  return pageContent;
+}
