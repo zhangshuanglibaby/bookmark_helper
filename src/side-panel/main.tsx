@@ -6,6 +6,8 @@ import { createRoot } from "react-dom/client";
 
 // 引入同一个 side-panel 文件夹中的侧边栏主界面组件。
 import App from "./App";
+// 引入侧边栏专用样式。
+import "./styles.css";
 
 // 从 sidep-panel/index.html 中找到 id 为 root 的元素。
 const rootElement = document.getElementById("root");

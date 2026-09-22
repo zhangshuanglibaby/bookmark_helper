@@ -1,0 +1,121 @@
+/* 让页面尺寸计算更稳定，元素的内边距不会额外撑大宽高。 */
+* {
+    box-sizing: border-box;
+  }
+  
+  /* 设置整个侧边栏页面的基础外观。 */
+  body {
+    /* 移除浏览器默认外边距。 */
+    margin: 0;
+  
+    /* 使用易读的系统字体。 */
+    font-family:
+      -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  
+    /* 设置页面背景色。 */
+    background: #f6f7f9;
+  
+    /* 设置主要文字颜色。 */
+    color: #1f2937;
+  }
+  
+  /* 设置 React 应用占满侧边栏可用高度。 */
+  #root {
+    min-height: 100vh;
+  }
+  
+  /* 设置侧边栏主要内容区域。 */
+  main {
+    /* 让标题、数量和清单从上到下排列。 */
+    display: flex;
+    flex-direction: column;
+  
+    /* 让页面至少占满整个侧边栏高度。 */
+    min-height: 100vh;
+  
+    /* 设置页面四周留白。 */
+    padding: 20px;
+  }
+  
+  /* 设置主标题样式。 */
+  h1 {
+    /* 移除浏览器默认外边距。 */
+    margin: 0;
+  
+    /* 设置标题字号。 */
+    font-size: 22px;
+  
+    /* 设置标题行高。 */
+    line-height: 1.3;
+  }
+  
+  /* 设置标题下方的数量文字样式。 */
+  h1 + p {
+    /* 设置标题与数量之间的间距。 */
+    margin: 8px 0 16px;
+  
+    /* 设置数量文字颜色。 */
+    color: #5f6b7a;
+  
+    /* 设置数量文字字号。 */
+    font-size: 14px;
+  }
+  
+  /* 设置待整理收藏的长卡片容器。 */
+  .archaeology-list {
+    /* 让这个区域占用剩余高度。 */
+    flex: 1;
+  
+    /* 内容过多时，只在卡片内部显示纵向滚动条。 */
+    overflow-y: auto;
+  
+    /* 设置卡片背景。 */
+    background: #ffffff;
+  
+    /* 设置细边框。 */
+    border: 1px solid #d9dee7;
+  
+    /* 使用较小圆角，使界面更适合工具型产品。 */
+    border-radius: 8px;
+  }
+  
+  /* 设置每一条收藏的展示区域。 */
+  .archaeology-list > article {
+    /* 设置每条收藏内部留白。 */
+    padding: 16px;
+  
+    /* 使用底部边框分隔相邻收藏。 */
+    border-bottom: 1px solid #e8ebf0;
+  }
+  
+  /* 移除最后一条收藏的底部边框。 */
+  .archaeology-list > article:last-child {
+    border-bottom: 0;
+  }
+  
+  /* 设置单条收藏标题样式。 */
+  .archaeology-list h2 {
+    /* 移除标题默认外边距。 */
+    margin: 0 0 8px;
+  
+    /* 设置适合清单条目的标题字号。 */
+    font-size: 16px;
+  
+    /* 设置标题行高。 */
+    line-height: 1.45;
+  }
+  
+  /* 设置单条收藏中的普通说明文字。 */
+  .archaeology-list p {
+    /* 设置文字之间的垂直间距。 */
+    margin: 4px 0;
+  
+    /* 设置辅助文字字号。 */
+    font-size: 13px;
+  
+    /* 设置辅助文字颜色。 */
+    color: #5f6b7a;
+  
+    /* 过长的网址或文件夹名称可以自动换行。 */
+    overflow-wrap: anywhere;
+  }
