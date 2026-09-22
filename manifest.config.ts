@@ -19,6 +19,17 @@ const manifest: ManifestV3Export = {
     "sidePanel",
     // 允许扩展读取、创建、删除浏览器收藏。
     "bookmarks",
+    // 允许后台管理临时打开的浏览器标签页。
+    "tabs",
+    // 允许扩展向网页注入正文读取脚本。
+    "scripting"
+  ],
+  // 声明扩展允许访问的网页范围。
+  host_permissions: [
+    // 允许访问 HTTPS 网页。
+    "https://*/*",
+    // 允许访问普通 HTTP 网页。
+    "http://*/*"
   ],
   // 配置 Chrome 侧边栏页面。
   side_panel: {
