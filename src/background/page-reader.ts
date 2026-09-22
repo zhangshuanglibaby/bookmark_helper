@@ -195,3 +195,59 @@ function waitForTabComplete(
       });
   });
 }
+
+/**
+ * chrome.tabs.create() 的 active: false 会让临时网页在后台打开，不抢走你正在看的标签页；chrome.tabs.remove() 用于关闭该临时标签页。
+ */
+// 临时打开一个网页，从中提取内容，然后关闭临时标签页。
+/**
+ * 
+ * @param url 需要读取的网页网址。
+ * @returns 从网页中读取到的标题、描述、关键词、正文和网址。
+ */
+export async function readPageContentFromUrl(
+  url: string,
+): Promise<PageContent> {
+  // 暂时保存临时标签页的 ID。
+  // 初始值为 undefined，表示标签页还没有创建成功。
+  let temporaryTabId: number | undefined;
+
+  try {
+    // 在后台创建一个临时标签页。
+    const temporaryTab = await chrome.tabs.create({
+      // 指定临时标签页要打开的网址。
+      url,
+
+      // false 表示不切换到这个临时标签页，避免打断用户当前浏览。
+      active: false,
+    });
+
+    // Chrome 正常情况下会提供标签页 ID。
+    // 如果没有拿到，后续无法等待、提取或关闭该标签页。
+    if (temporaryTab.id === undefined) {
+      throw new Error("无法创建临时标签页");
+    }
+
+    // 保存临时标签页 ID，供 finally 区块关闭它。
+    temporaryTabId = temporaryTab.id;
+
+    // 等待网页加载完成。
+    await waitForTabComplete(temporaryTabId);
+
+    // 将正文提取函数注入临时标签页，并返回提取结果。
+    return await readPageContentFromTab(temporaryTabId);
+
+  } finally {
+    // 无论读取成功、读取失败或加载超时，都尝试关闭临时标签页。
+    if (temporaryTabId !== undefined) {
+      try {
+        // 关闭插件创建的临时标签页。
+        await chrome.tabs.remove(temporaryTabId);
+      } catch (error) {
+        // 标签页若已被关闭，关闭操作可能失败。
+        // 这里只记录警告，不覆盖前面真正的读取错误。
+        console.warn("关闭临时标签页失败：", error);
+      }
+    }
+  }
+}
