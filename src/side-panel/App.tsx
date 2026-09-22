@@ -10,11 +10,8 @@ import type {
   ExtensionMessage,
 } from "../shared/messages";
 
-
-
-
-
-
+// 引入待整理收藏的长清单组件。
+import ArchaeologyList from "./ArchaeologyList";
 
 
 // 定义“收藏夹整理助手”的侧边栏主界面组件。
@@ -92,9 +89,15 @@ function App() {
       {/* 读取失败时，显示错误信息。 */}
       {errorMessage && <p>读取失败：{errorMessage}</p>}
 
-      {/* 读取成功后，显示需要整理的收藏数量。 */}
+      {/* 读取成功后，显示数量和待整理收藏长清单。 */}
       {!isLoading && !errorMessage && (
-        <p>需要整理的收藏：{bookmarks.length} 条</p>
+        <>
+          {/* 显示当前需要整理的收藏总数量。 */}
+          <p>需要整理的收藏：{bookmarks.length} 条</p>
+
+          {/* 将全部待整理收藏传给长清单组件。 */}
+          <ArchaeologyList bookmarks={bookmarks} />
+        </>
       )}
     </main>
   )
