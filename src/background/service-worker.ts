@@ -81,9 +81,38 @@ chrome.runtime.onMessage.addListener(
             error: error instanceof Error ? error.message : "读取收藏夹失败",
           });
         })
+      // 告诉 Chrome：sendResponse 会在异步读取完成后才执行。
+      // 如果不写 return true，Chrome 可能会提前关闭消息通道。
+      return true;
     }
-    // 告诉 Chrome：sendResponse 会在异步读取完成后才执行。
-    // 如果不写 return true，Chrome 可能会提前关闭消息通道。
-    return true;
+
+    // 判断侧边栏是否请求打开某条收藏。
+    if (message.type === "OPEN_BOOKMARK") {
+      // 在新的浏览器标签页中打开消息携带的网址。
+      chrome.tabs
+        .create({
+          // 指定新标签页需要打开的网址。
+          url: message.url,
+        })
+        .then(() => {
+          // 将打开成功的结果回传给侧边栏。
+          sendResponse({
+            success: true,
+          });
+        })
+        .catch((error) => {
+          // 打开失败时，将错误信息回传给侧边栏。
+          sendResponse({
+            success: false,
+            error: error instanceof Error ? error.message : "打开网页失败",
+          });
+        });
+      // 告诉 Chrome：sendResponse 会在异步操作完成后执行。
+      return true;
+    }
+
+    // 当前没有处理其他消息，所以不返回任何内容。
+    return undefined;
   }
+
 )
