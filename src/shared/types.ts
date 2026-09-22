@@ -27,3 +27,16 @@ export interface BookmarkRecord {
   // 这条本地记录最后一次更新的时间。
   updatedAt: number;
 }
+
+// 定义从一个网页中提取出来的内容。
+export interface PageContent {
+  // 网页在浏览器标签页中显示的标题。
+  title: string;
+  // 网页 meta description 中的描述文字。
+  // 网页没有提供时为空字符串。
+  description: string;
+  // 从 article、main 或 body 中提取并清理后的正文文字。
+  text: string;
+  // 实际读取的网页网址。
+  url: string;
+}
