@@ -4,7 +4,12 @@
     "target": "es2023",
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
-    "types": ["vite/client"],
+    "types": [
+       // 保留 Vite 提供的类型。
+      "vite/client",
+      // 让 TypeScript 认识 Chrome 扩展 API，例如 chrome.bookmarks。
+      "chrome-types"  
+    ],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
 

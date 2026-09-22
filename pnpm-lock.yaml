@@ -33,6 +33,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.1.1
         version: 6.1.1(vite@8.3.0(@types/node@24.13.6))
+      chrome-types:
+        specifier: ^0.1.449
+        version: 0.1.449
       eslint:
         specifier: ^10.10.0
         version: 10.11.0
@@ -456,6 +459,9 @@ packages:
 
   caniuse-lite@1.0.30001810:
     resolution: {integrity: sha512-TITQPUkaz+aVk5GL6NhOdwk1aEaNTSDPsGFWrTuhKGtjTF70jL/Oht2W4c6rXUe5fu7Ie19VIahAXHIIiWWNeg==}
+
+  chrome-types@0.1.449:
+    resolution: {integrity: sha512-6BkScrkkvJJX6mUW/ve+vJZrAZrCpEX7Umg9btjGL7QoDy0bNakWgWDjGPR8LyRko5ivaBa6q/eb0Rqk0y2pIw==}
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
@@ -1431,6 +1437,8 @@ snapshots:
       qified: 0.10.1
 
   caniuse-lite@1.0.30001810: {}
+
+  chrome-types@0.1.449: {}
 
   convert-source-map@2.0.0: {}
 
