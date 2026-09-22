@@ -10,6 +10,9 @@ import {
 // 引入侧边栏与后台之间共用的消息类型说明。
 import type { ExtensionMessage } from "../shared/messages";
 
+// 引入“临时打开网页并提取内容”的函数。
+import { readPageContentFromUrl } from "./page-reader";
+
 // 在扩展安装或更新后，读取一次收藏夹。
 // 现在先把数量输出到后台控制台，用来验证读取功能是否正常。
 // chrome.runtime.onInstalled.addListener 是 Chrome 扩展开发中用来监听‌扩展安装、更新或浏览器更新‌等事件的核心 API，常用于执行一次性初始化任务
@@ -27,6 +30,29 @@ chrome.runtime.onInstalled.addListener(() => {
     console.log(
       `需要整理的收藏：${archaeologyBookmarks.length} 条。`,
     );
+
+    // 取出排序后的第一条待整理收藏，用它测试正文提取。
+    const firstBookmark = archaeologyBookmarks[0];
+
+    // 输出本次准备提取的收藏信息。
+    console.log("准备提取网页内容：", firstBookmark);
+
+    // 临时打开这条收藏的网址，并提取网页内容。
+    readPageContentFromUrl(firstBookmark.url)
+      .then((pageContent) => {
+        // 输出提取结果，稍后我们会检查标题、描述、关键词和正文。
+        console.log("网页提取结果：", pageContent);
+      })
+      .catch((error) => {
+        // 网页打不开、加载超时或无法注入脚本时，输出错误。
+        console.error("网页内容提取失败：", error);
+      });
+
+    // 没有待整理收藏时，不继续执行网页提取。
+    if (!firstBookmark) {
+      console.log("没有可用于测试正文提取的收藏。");
+      return;
+    }
 
     // 输出排序后的第一条待整理收藏，方便检查排序是否正确。
     console.log(
