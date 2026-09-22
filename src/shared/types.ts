@@ -35,6 +35,9 @@ export interface PageContent {
   // 网页 meta description 中的描述文字。
   // 网页没有提供时为空字符串。
   description: string;
+  // 网页 meta keywords 中的关键词。
+  // 网页没有提供时为空字符串。
+  keywords: string;
   // 从 article、main 或 body 中提取并清理后的正文文字。
   text: string;
   // 实际读取的网页网址。
