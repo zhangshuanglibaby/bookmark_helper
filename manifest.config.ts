@@ -17,6 +17,8 @@ const manifest: ManifestV3Export = {
   permissions: [
     // 允许扩展使用 Chrome 右侧边栏功能。
     "sidePanel",
+    // 允许扩展读取、创建、删除浏览器收藏。
+    "bookmarks",
   ],
   // 配置 Chrome 侧边栏页面。
   side_panel: {

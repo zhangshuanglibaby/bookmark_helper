@@ -1,3 +1,7 @@
+/**
+ * 这个文件的主要作用是：读取收藏夹
+ */
+
 // 引入我们定义好的收藏记录数据类型。
 import type { BookmarkRecord } from "../shared/types";
 
