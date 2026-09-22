@@ -7,6 +7,9 @@ import {
   getArchaeologyBookmarks
 } from "./bookmarks";
 
+// 引入侧边栏与后台之间共用的消息类型说明。
+import type { ExtensionMessage } from "../shared/messages";
+
 // 在扩展安装或更新后，读取一次收藏夹。
 // 现在先把数量输出到后台控制台，用来验证读取功能是否正常。
 // chrome.runtime.onInstalled.addListener 是 Chrome 扩展开发中用来监听‌扩展安装、更新或浏览器更新‌等事件的核心 API，常用于执行一次性初始化任务
@@ -36,3 +39,51 @@ chrome.runtime.onInstalled.addListener(() => {
       console.error("读取或筛选收藏夹失败：", error);
     });
 })
+
+
+// 监听页面或其他扩展部分发送给后台的消息。
+chrome.runtime.onMessage.addListener(
+  (
+    // message 是侧边栏发送过来的消息。
+    message: ExtensionMessage,
+
+    // sender 包含消息发送者的信息；当前这一步暂时不需要使用。
+    _sender,
+
+    // sendResponse 用来把处理结果回传给侧边栏。
+    sendResponse,
+  ) => {
+    // 判断侧边栏是否在请求“待整理收藏清单”。
+    if (message.type === "LOAD_ARCHAEOLOGY_LIST") {
+      // 读取全部收藏，再筛选出超过 180 天的收藏。
+      readAllBookmarks()
+        .then((allBookmarks) => {
+
+          // 按默认的 180 天规则筛选和排序。
+          const archaeologyBookmarks = getArchaeologyBookmarks(allBookmarks);
+
+          // 将清单数据回传给侧边栏。
+          sendResponse({
+            // 表示本次请求成功。
+            success: true,
+
+            // 返回需要整理的收藏数组。
+            bookmarks: archaeologyBookmarks,
+          });
+        })
+        .catch((error) => {
+          // 读取失败时，也将失败信息回传给侧边栏。
+          sendResponse({
+            // 表示本次请求失败。
+            success: false,
+
+            // 将错误转换成便于显示的文字。
+            error: error instanceof Error ? error.message : "读取收藏夹失败",
+          });
+        })
+    }
+    // 告诉 Chrome：sendResponse 会在异步读取完成后才执行。
+    // 如果不写 return true，Chrome 可能会提前关闭消息通道。
+    return true;
+  }
+)
