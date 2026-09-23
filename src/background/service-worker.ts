@@ -10,6 +10,9 @@ import {
 // 引入侧边栏与后台之间共用的消息类型说明。
 import type { ExtensionMessage } from "../shared/messages";
 
+// 引入读取整理天数设置的函数。
+import { loadSettings } from "../shared/settings";
+
 // 在扩展安装或更新后，读取一次收藏夹。
 // 现在先把数量输出到后台控制台，用来验证读取功能是否正常。
 // chrome.runtime.onInstalled.addListener 是 Chrome 扩展开发中用来监听‌扩展安装、更新或浏览器更新‌等事件的核心 API，常用于执行一次性初始化任务
@@ -50,12 +53,17 @@ chrome.runtime.onMessage.addListener(
   ) => {
     // 判断侧边栏是否在请求“待整理收藏清单”。
     if (message.type === "LOAD_ARCHAEOLOGY_LIST") {
-      // 读取全部收藏，再筛选出超过 180 天的收藏。
+      // 读取全部网页收藏。
       readAllBookmarks()
-        .then((allBookmarks) => {
+        .then(async (allBookmarks) => {
 
-          // 按默认的 180 天规则筛选和排序。
-          const archaeologyBookmarks = getArchaeologyBookmarks(allBookmarks);
+          // 收藏读取完成后，继续读取用户设置。
+
+          // 读取已保存的整理天数；没有设置时得到默认的 180 天。
+          const settings = await loadSettings();
+
+          // 按设置中的天数筛选并排序收藏。
+          const archaeologyBookmarks = getArchaeologyBookmarks(allBookmarks, settings.archaeologyAgeDays);
 
           // 将清单数据回传给侧边栏。
           sendResponse({
