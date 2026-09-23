@@ -1,5 +1,5 @@
-// 引入 React 的状态功能，用来保存当前收藏的摘要结果。
-import { useState } from "react";
+// 引入状态功能和页面元素引用功能。
+import { useRef, useState } from "react";
 
 // 引入一条收藏记录的数据类型。
 import type { BookmarkRecord } from "../shared/types";
@@ -62,6 +62,9 @@ function BookmarkItem({ bookmark }: BookmarkItemProps) {
 
   // 保存摘要生成失败时要显示的提示。
   const [summaryError, setSummaryError] = useState("");
+
+  // 保存当前这条收藏对应的 article 页面元素。
+  const articleRef = useRef<HTMLElement | null>(null);
 
   // 提取网页所属的网站域名。
   const domain = getDomain(bookmark.url);
@@ -129,7 +132,7 @@ function BookmarkItem({ bookmark }: BookmarkItemProps) {
 
   return (
     // article 表示一条独立、完整的收藏内容。
-    <article>
+    <article ref={articleRef}>
       {/* 显示网页标题。 */}
       <h2>{bookmark.title}</h2>
 
