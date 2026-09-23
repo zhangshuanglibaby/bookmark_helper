@@ -142,6 +142,21 @@ function BookmarkItem({ bookmark }: BookmarkItemProps) {
       {/* 显示最近访问时间或收藏时间。 */}
       <p>最近记录时间：{formatBookmarkDate(displayTime)}</p>
 
+      {/* 正在处理时，显示等待提示。 */}
+      {summaryStatus === "loading" && (
+        <p role="status">摘要生成中…</p>
+      )}
+
+      {/* 处理成功时，显示摘要内容。 */}
+      {summaryStatus === "success" && (
+        <p>摘要：{summary}</p>
+      )}
+
+      {/* 处理失败时，显示原因。 */}
+      {summaryStatus === "error" && (
+        <p role="alert">摘要生成失败：{summaryError}</p>
+      )}
+
       {/* 放置这条收藏可执行操作的区域。 */}
       <div className="bookmark-actions">
         {/* 点击后请求后台在新标签页打开当前收藏。 */}
