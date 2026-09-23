@@ -4,9 +4,16 @@ import { useEffect, useState } from "react";
 // 引入默认设置和本地设置读取函数。
 import { DEFAULT_SETTINGS, loadSettings, saveSettings } from "../shared/settings";
 
+// 定义设置组件接收的通知函数。
+interface SettingsProps {
+  // 保存成功后，通知主页面重新读取收藏清单。
+  onSaved?: () => void;
+}
+
 
 // 定义整理天数设置组件。
-function Settings() {
+// 接收保存成功后的通知函数。
+function Settings({ onSaved }: SettingsProps) {
   // 输入框先显示默认的 180 天。
   const [ageDays, setAgeDays] = useState(String(DEFAULT_SETTINGS.archaeologyAgeDays));
 
@@ -42,6 +49,9 @@ function Settings() {
 
       // 将输入文字转换为数字；无效数字会被保存函数拒绝。
       await saveSettings({ archaeologyAgeDays: Number(ageDays) });
+
+      // 本地保存成功后，通知主页面更新清单。
+      onSaved?.();
 
       // 保存成功后显示提示。
       setSaveMessage("设置已保存");
