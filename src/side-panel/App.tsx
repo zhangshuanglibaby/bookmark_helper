@@ -13,6 +13,9 @@ import type {
 // 引入待整理收藏的长清单组件。
 import ArchaeologyList from "./ArchaeologyList";
 
+// 引入整理天数设置组件。
+import Settings from "./Settings";
+
 
 // 定义“收藏夹整理助手”的侧边栏主界面组件。
 function App() {
@@ -91,6 +94,9 @@ function App() {
     <main>
       {/* 显示侧边栏的主标题。 */}
       <h1>收藏夹整理助手</h1>
+
+      {/* 在清单上方显示整理天数设置。 */}
+      <Settings />
 
       {/* 正在读取时，显示加载提示。 */}
       {isLoading && <p>正在读取收藏夹...</p>}
