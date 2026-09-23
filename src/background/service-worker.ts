@@ -106,6 +106,29 @@ chrome.runtime.onMessage.addListener(
       return true;
     }
 
+    // 判断侧边栏是否请求删除一条收藏。
+    if (message.type === "DELETE_BOOKMARK") {
+      // 根据 Chrome 收藏 ID 删除对应书签。
+      chrome.bookmarks.remove(message.bookmarkId)
+        // 删除成功后通知侧边栏。
+        .then(() => {
+          // 返回成功结果。
+          sendResponse({ success: true });
+        })
+        // 删除失败时通知侧边栏，不假装删除成功。
+        .catch((error) => {
+          // 返回失败结果和可阅读的原因。
+          sendResponse({
+            // 表示删除失败。
+            success: false,
+            // 将错误转换为文字。
+            error: error instanceof Error ? error.message : "删除收藏失败",
+          });
+        });
+      // 保持消息通道开启，等待 Chrome 完成删除后再回复。
+      return true;
+    }
+
     // 当前没有处理其他消息，所以不返回任何内容。
     return undefined;
   }
