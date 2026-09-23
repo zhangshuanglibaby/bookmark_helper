@@ -16,7 +16,14 @@ export type ExtensionMessage =
 
     // 需要打开的网页网址。
     url: string;
-  };
+  }
+  // 请求后台删除一条收藏。
+  | {
+    // 告诉后台这是一条删除请求。
+    type: "DELETE_BOOKMARK";
+    // 指定要删除的 Chrome 收藏 ID。
+    bookmarkId: string;
+  };;
 
 // 定义后台返回“待整理收藏清单”时可能出现的两种结果。
 export type ArchaeologyListResponse =
