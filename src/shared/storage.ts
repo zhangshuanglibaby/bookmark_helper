@@ -8,6 +8,9 @@ import type { SummaryRecord } from "./types";
 // 定义在 chrome.storage.local 中保存摘要缓存时使用的固定键名。
 const SUMMARY_RECORDS_KEY = "summaryRecords";
 
+// 让摘要保存操作排队，避免两条摘要同时改写整份缓存。
+let summaryWriteQueue: Promise<void> = Promise.resolve();
+
 // 定义摘要缓存的数据结构。
 // 键是 bookmarkId，值是对应收藏的摘要记录。
 type SummaryRecordMap = Record<string, SummaryRecord>;
@@ -54,14 +57,19 @@ export async function getSummaryRecord(
 export async function saveSummaryRecord(
   summaryRecord: SummaryRecord,
 ): Promise<void> {
-  // 先读取已有的全部摘要缓存。
-  const summaryRecords = await getSummaryRecords();
-
-  // 使用 bookmarkId 作为键，写入或覆盖这一条摘要。
-  summaryRecords[summaryRecord.bookmarkId] = summaryRecord;
-
-  // 将更新后的完整摘要缓存保存回浏览器本地存储。
-  await chrome.storage.local.set({
-    [SUMMARY_RECORDS_KEY]: summaryRecords,
+  // 等待前一次保存结束，再开始本次读取和写入。
+  const currentWrite = summaryWriteQueue.then(async () => {
+    // 读取最新的全部摘要缓存。
+    const summaryRecords = await getSummaryRecords();
+    // 以收藏 ID 为键，加入或更新这一条摘要。
+    summaryRecords[summaryRecord.bookmarkId] = summaryRecord;
+    // 将更新后的缓存保存到浏览器本地。
+    await chrome.storage.local.set({
+      [SUMMARY_RECORDS_KEY]: summaryRecords, // 保持现有的存储键名。
+    });
   });
+  // 即使本次保存失败，也允许下一次保存继续排队执行。
+  summaryWriteQueue = currentWrite.catch(() => { });
+  // 将本次保存的成功或失败结果交给调用方。
+  return currentWrite;
 }

@@ -13,6 +13,15 @@ import type { ExtensionMessage } from "../shared/messages";
 // 引入“临时打开网页并提取内容”的函数。
 import { readPageContentFromUrl } from "./page-reader";
 
+// 引入向本机后端请求摘要的函数。
+import { requestSummary } from "./summary-api";
+
+// 引入计算当前网页内容指纹的函数。
+import { createPageContentHash } from "../shared/hash";
+
+// 引入读取和保存摘要缓存的函数。
+import { getSummaryRecord, saveSummaryRecord } from "../shared/storage";
+
 // 在扩展安装或更新后，读取一次收藏夹。
 // 现在先把数量输出到后台控制台，用来验证读取功能是否正常。
 // chrome.runtime.onInstalled.addListener 是 Chrome 扩展开发中用来监听‌扩展安装、更新或浏览器更新‌等事件的核心 API，常用于执行一次性初始化任务
@@ -32,33 +41,33 @@ chrome.runtime.onInstalled.addListener(() => {
     );
 
     // 取出排序后的第一条待整理收藏，用它测试正文提取。
-    const firstBookmark = archaeologyBookmarks[0];
+    // const firstBookmark = archaeologyBookmarks[0];
 
     // 输出本次准备提取的收藏信息。
-    console.log("准备提取网页内容：", firstBookmark);
+    // console.log("准备提取网页内容：", firstBookmark);
 
     // 临时打开这条收藏的网址，并提取网页内容。
-    readPageContentFromUrl(firstBookmark.url)
-      .then((pageContent) => {
-        // 输出提取结果，稍后我们会检查标题、描述、关键词和正文。
-        console.log("网页提取结果：", pageContent);
-      })
-      .catch((error) => {
-        // 网页打不开、加载超时或无法注入脚本时，输出错误。
-        console.error("网页内容提取失败：", error);
-      });
+    // readPageContentFromUrl(firstBookmark.url)
+    //   .then((pageContent) => {
+    //     // 输出提取结果，稍后我们会检查标题、描述、关键词和正文。
+    //     console.log("网页提取结果：", pageContent);
+    //   })
+    //   .catch((error) => {
+    //     // 网页打不开、加载超时或无法注入脚本时，输出错误。
+    //     console.error("网页内容提取失败：", error);
+    //   });
 
-    // 没有待整理收藏时，不继续执行网页提取。
-    if (!firstBookmark) {
-      console.log("没有可用于测试正文提取的收藏。");
-      return;
-    }
+    // // 没有待整理收藏时，不继续执行网页提取。
+    // if (!firstBookmark) {
+    //   console.log("没有可用于测试正文提取的收藏。");
+    //   return;
+    // }
 
-    // 输出排序后的第一条待整理收藏，方便检查排序是否正确。
-    console.log(
-      "最先显示的待整理收藏：",
-      archaeologyBookmarks[0],
-    );
+    // // 输出排序后的第一条待整理收藏，方便检查排序是否正确。
+    // console.log(
+    //   "最先显示的待整理收藏：",
+    //   archaeologyBookmarks[0],
+    // );
   })
     .catch((error) => {
       // 如果读取或筛选失败，输出错误信息，方便排查。
@@ -134,6 +143,55 @@ chrome.runtime.onMessage.addListener(
           });
         });
       // 告诉 Chrome：sendResponse 会在异步操作完成后执行。
+      return true;
+    }
+
+    // 判断侧边栏是否请求为某条收藏生成摘要。
+    if (message.type === "GENERATE_SUMMARY") {
+      // 临时读取该收藏的网页内容。
+      readPageContentFromUrl(message.url)
+        // 读取网页后，先判断已有摘要是否仍可使用。
+        .then(async (pageContent) => {
+          // 为当前网页内容计算指纹。
+          const sourceTextHash = await createPageContentHash(pageContent);
+
+          // 用这条收藏的 ID 查找本地摘要。
+          const cachedRecord = await getSummaryRecord(message.bookmarkId);
+
+          // 内容指纹相同，说明可以直接使用已保存的摘要。
+          if (cachedRecord?.sourceTextHash === sourceTextHash) {
+            // 返回缓存摘要，不请求 DeepSeek。
+            return cachedRecord.summary;
+          }
+
+          // 没有可用缓存时，请求本机后端生成新摘要。
+          const summary = await requestSummary(pageContent);
+
+          // 将新摘要及其内容指纹保存到本地。
+          await saveSummaryRecord({
+            bookmarkId: message.bookmarkId, // 对应的收藏 ID。
+            summary, // 本次生成的摘要。
+            sourceTextHash, // 本次网页内容的指纹。
+            generatedAt: Date.now(), // 本次生成的时间。
+          });
+
+          // 将摘要交给后面的成功回复代码。
+          return summary;
+        })
+        // 后端成功返回摘要时，回复侧边栏。
+        .then((summary) => {
+          // 按约定的成功格式返回摘要。
+          sendResponse({ success: true, summary });
+        })
+        // 网页读取或摘要请求失败时，回复错误。
+        .catch((error) => {
+          // 按约定的失败格式返回错误文字。
+          sendResponse({
+            success: false, // 表示本次生成失败。
+            error: error instanceof Error ? error.message : "摘要生成失败", // 给侧边栏的提示。
+          });
+        });
+      // 保持消息通道开启，等待上述异步操作完成后再回复。
       return true;
     }
 
