@@ -30,6 +30,9 @@ function App() {
   // null 表示当前没有错误。
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // 记录清单需要重新读取的次数。
+  const [reloadCount, setReloadCount] = useState(0);
+
   // 页面首次显示时，向后台 Service Worker 请求待整理收藏。
   useEffect(() => {
     // 定义一个异步函数，负责向后台发送消息。
@@ -76,7 +79,7 @@ function App() {
 
     // 执行读取收藏夹的操作。
     loadArchaeologyList();
-  }, []);
+  }, [reloadCount]); // 保存设置后计数变化，就重新读取并筛选清单。
 
   // 后台确认删除成功后，从页面清单中移除对应收藏。
   function handleBookmarkDeleted(bookmarkId: string) {
@@ -96,7 +99,8 @@ function App() {
       <h1>收藏夹整理助手</h1>
 
       {/* 在清单上方显示整理天数设置。 */}
-      <Settings />
+      {/* 设置保存成功后，增加计数以触发清单重新读取。 */}
+      <Settings onSaved={() => setReloadCount((count) => count + 1)} />
 
       {/* 正在读取时，显示加载提示。 */}
       {isLoading && <p>正在读取收藏夹...</p>}
