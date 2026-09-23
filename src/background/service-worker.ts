@@ -22,6 +22,9 @@ import { createPageContentHash } from "../shared/hash";
 // 引入读取和保存摘要缓存的函数。
 import { getSummaryRecord, saveSummaryRecord } from "../shared/storage";
 
+// 引入摘要任务队列，限制同时处理的收藏数量。
+import { runSummaryWithLimit } from "./summary-queue";
+
 // 在扩展安装或更新后，读取一次收藏夹。
 // 现在先把数量输出到后台控制台，用来验证读取功能是否正常。
 // chrome.runtime.onInstalled.addListener 是 Chrome 扩展开发中用来监听‌扩展安装、更新或浏览器更新‌等事件的核心 API，常用于执行一次性初始化任务
@@ -149,35 +152,35 @@ chrome.runtime.onMessage.addListener(
     // 判断侧边栏是否请求为某条收藏生成摘要。
     if (message.type === "GENERATE_SUMMARY") {
       // 临时读取该收藏的网页内容。
-      readPageContentFromUrl(message.url)
-        // 读取网页后，先判断已有摘要是否仍可使用。
-        .then(async (pageContent) => {
-          // 为当前网页内容计算指纹。
-          const sourceTextHash = await createPageContentHash(pageContent);
+      runSummaryWithLimit(async () => {
+        // 临时读取当前收藏的网页内容。
+        const pageContent = await readPageContentFromUrl(message.url);
 
-          // 用这条收藏的 ID 查找本地摘要。
-          const cachedRecord = await getSummaryRecord(message.bookmarkId);
+        // 计算当前网页内容的指纹。
+        const sourceTextHash = await createPageContentHash(pageContent);
 
-          // 内容指纹相同，说明可以直接使用已保存的摘要。
-          if (cachedRecord?.sourceTextHash === sourceTextHash) {
-            // 返回缓存摘要，不请求 DeepSeek。
-            return cachedRecord.summary;
-          }
+        // 查找这条收藏已保存的摘要。
+        const cachedRecord = await getSummaryRecord(message.bookmarkId);
 
-          // 没有可用缓存时，请求本机后端生成新摘要。
-          const summary = await requestSummary(pageContent);
+        // 指纹一致时直接返回缓存，不请求 DeepSeek。
+        if (cachedRecord?.sourceTextHash === sourceTextHash) {
+          return cachedRecord.summary; // 将缓存摘要交给后面的成功回复。
+        }
 
-          // 将新摘要及其内容指纹保存到本地。
-          await saveSummaryRecord({
-            bookmarkId: message.bookmarkId, // 对应的收藏 ID。
-            summary, // 本次生成的摘要。
-            sourceTextHash, // 本次网页内容的指纹。
-            generatedAt: Date.now(), // 本次生成的时间。
-          });
+        // 缓存不存在或网页内容已变化时，请求新摘要。
+        const summary = await requestSummary(pageContent);
 
-          // 将摘要交给后面的成功回复代码。
-          return summary;
-        })
+        // 保存新摘要，供之后重复查看时使用。
+        await saveSummaryRecord({
+          bookmarkId: message.bookmarkId, // 当前收藏的 ID。
+          summary, // 新生成的摘要。
+          sourceTextHash, // 与这次网页内容对应的指纹。
+          generatedAt: Date.now(), // 摘要生成的时间。
+        });
+
+        // 将新摘要交给后面的成功回复。
+        return summary;
+      })
         // 后端成功返回摘要时，回复侧边栏。
         .then((summary) => {
           // 按约定的成功格式返回摘要。
