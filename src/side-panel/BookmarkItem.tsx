@@ -1,8 +1,12 @@
+// 引入 React 的状态功能，用来保存当前收藏的摘要结果。
+import { useState } from "react";
+
 // 引入一条收藏记录的数据类型。
 import type { BookmarkRecord } from "../shared/types";
 
-// 引入侧边栏发送给后台的消息类型。
-import type { ExtensionMessage } from "../shared/messages";
+// 引入侧边栏发送给后台的消息类型，以及后台返回的摘要结果类型。
+import type { ExtensionMessage， SummaryResponse } from "../shared/messages";
+
 
 // 定义这个组件需要接收的数据。
 interface BookmarkItemProps {
@@ -42,6 +46,15 @@ function getDomain(url: string): string {
   }
 }
 
+// 记录摘要目前是未请求、生成中、成功还是失败。
+const [summaryStatus, setSummaryStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+// 保存成功生成的摘要文字。
+const [summary, setSummary] = useState("");
+
+// 保存摘要生成失败时要显示的提示。
+const [summaryError, setSummaryError] = useState("");
+
 // 定义单条收藏的展示组件。
 /**
  * 定义单条收藏的展示组件。
@@ -73,6 +86,42 @@ function BookmarkItem({ bookmark }: BookmarkItemProps) {
       // 如果消息发送失败，在侧边栏的控制台输出错误。
       console.error("请求打开网页失败：", error);
     });
+  }
+
+  // 请求后台为当前收藏生成或读取摘要。
+  async function handleGenerateSummary(): Promise<void> {
+    // 将这条收藏标记为正在处理。
+    setSummaryStatus("loading");
+    // 清除上一次可能留下的错误提示。
+    setSummaryError("");
+
+    // 准备发送给后台的消息。
+    const message: ExtensionMessage = {
+      type: "GENERATE_SUMMARY", // 告诉后台要生成摘要。
+      bookmarkId: bookmark.bookmarkId, // 用收藏 ID 查找或保存缓存。
+      url: bookmark.url, // 告诉后台要读取哪个网页。
+    };
+
+    // 等待后台读取网页、检查缓存并返回摘要。
+    try {
+      // 将消息发送给后台，并等待处理结果。
+      const response: SummaryResponse = await chrome.runtime.sendMessage(message);
+
+      // 后台报告失败时，将错误交给下面的处理代码。
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+
+      // 保存成功返回的摘要文字。
+      setSummary(response.summary);
+      // 将这条收藏标记为处理成功。
+      setSummaryStatus("success");
+    } catch (error) {
+      // 保存可显示的错误提示。
+      setSummaryError(error instanceof Error ? error.message : "摘要生成失败");
+      // 将这条收藏标记为处理失败。
+      setSummaryStatus("error");
+    }
   }
 
 
