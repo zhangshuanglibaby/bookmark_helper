@@ -1,5 +1,5 @@
-// 引入状态功能和页面元素引用功能。
-import { useRef, useState } from "react";
+// 引入副作用、页面元素引用和状态功能。
+import { useEffect, useRef, useState } from "react";
 
 // 引入一条收藏记录的数据类型。
 import type { BookmarkRecord } from "../shared/types";
@@ -66,6 +66,9 @@ function BookmarkItem({ bookmark }: BookmarkItemProps) {
   // 保存当前这条收藏对应的 article 页面元素。
   const articleRef = useRef<HTMLElement | null>(null);
 
+  // 记录这条收藏是否已经发起过摘要请求，防止反复进入视野时重复请求。
+  const hasRequestedSummaryRef = useRef(false);
+
   // 提取网页所属的网站域名。
   const domain = getDomain(bookmark.url);
 
@@ -128,7 +131,46 @@ function BookmarkItem({ bookmark }: BookmarkItemProps) {
     }
   }
 
+  // 观察当前收藏何时进入清单的可见区域。
+  useEffect(() => {
+    // 取得当前收藏的页面元素。
+    const article = articleRef.current;
 
+    // 找到真正滚动的收藏清单容器。
+    const list = article?.closest(".archaeology-list");
+
+    // 找不到元素或清单时，不开始观察。
+    if (!article || !list) {
+      return;
+    }
+
+    // 创建可见区域观察器。
+    const observer = new IntersectionObserver((entries) => {
+      // 浏览器报告可见状态变化时执行。
+
+      // 只有进入可见区域且尚未请求过时才继续。
+      if (!entries.some((entry) => entry.isIntersecting) || hasRequestedSummaryRef.current) {
+        return;
+      }
+      // 先标记已请求，避免同一条收藏被重复触发。
+      hasRequestedSummaryRef.current = true;
+
+      // 这条收藏只需触发一次，不再继续观察。
+      observer.disconnect();
+
+      // 请求后台读取缓存或生成摘要；结果由现有函数更新页面状态。
+      void handleGenerateSummary();
+    }, // 以收藏清单为可见区域，而不是以整个浏览器窗口为准。
+      { root: list, threshold: 0.1 });
+
+    // 开始观察当前收藏。
+    observer.observe(article);
+
+    // 组件卸载时停止观察，避免留下无用的监听。
+    return () => observer.disconnect();
+
+
+  }, [bookmark.bookmarkId, bookmark.url]);
 
   return (
     // article 表示一条独立、完整的收藏内容。
