@@ -10,21 +10,6 @@ import {
 // 引入侧边栏与后台之间共用的消息类型说明。
 import type { ExtensionMessage } from "../shared/messages";
 
-// 引入“临时打开网页并提取内容”的函数。
-import { readPageContentFromUrl } from "./page-reader";
-
-// 引入向本机后端请求摘要的函数。
-import { requestSummary } from "./summary-api";
-
-// 引入计算当前网页内容指纹的函数。
-import { createPageContentHash } from "../shared/hash";
-
-// 引入读取和保存摘要缓存的函数。
-import { getSummaryRecord, saveSummaryRecord } from "../shared/storage";
-
-// 引入摘要任务队列，限制同时处理的收藏数量。
-import { runSummaryWithLimit } from "./summary-queue";
-
 // 在扩展安装或更新后，读取一次收藏夹。
 // 现在先把数量输出到后台控制台，用来验证读取功能是否正常。
 // chrome.runtime.onInstalled.addListener 是 Chrome 扩展开发中用来监听‌扩展安装、更新或浏览器更新‌等事件的核心 API，常用于执行一次性初始化任务
@@ -43,34 +28,6 @@ chrome.runtime.onInstalled.addListener(() => {
       `需要整理的收藏：${archaeologyBookmarks.length} 条。`,
     );
 
-    // 取出排序后的第一条待整理收藏，用它测试正文提取。
-    // const firstBookmark = archaeologyBookmarks[0];
-
-    // 输出本次准备提取的收藏信息。
-    // console.log("准备提取网页内容：", firstBookmark);
-
-    // 临时打开这条收藏的网址，并提取网页内容。
-    // readPageContentFromUrl(firstBookmark.url)
-    //   .then((pageContent) => {
-    //     // 输出提取结果，稍后我们会检查标题、描述、关键词和正文。
-    //     console.log("网页提取结果：", pageContent);
-    //   })
-    //   .catch((error) => {
-    //     // 网页打不开、加载超时或无法注入脚本时，输出错误。
-    //     console.error("网页内容提取失败：", error);
-    //   });
-
-    // // 没有待整理收藏时，不继续执行网页提取。
-    // if (!firstBookmark) {
-    //   console.log("没有可用于测试正文提取的收藏。");
-    //   return;
-    // }
-
-    // // 输出排序后的第一条待整理收藏，方便检查排序是否正确。
-    // console.log(
-    //   "最先显示的待整理收藏：",
-    //   archaeologyBookmarks[0],
-    // );
   })
     .catch((error) => {
       // 如果读取或筛选失败，输出错误信息，方便排查。
@@ -146,55 +103,6 @@ chrome.runtime.onMessage.addListener(
           });
         });
       // 告诉 Chrome：sendResponse 会在异步操作完成后执行。
-      return true;
-    }
-
-    // 判断侧边栏是否请求为某条收藏生成摘要。
-    if (message.type === "GENERATE_SUMMARY") {
-      // 临时读取该收藏的网页内容。
-      runSummaryWithLimit(async () => {
-        // 临时读取当前收藏的网页内容。
-        const pageContent = await readPageContentFromUrl(message.url);
-
-        // 计算当前网页内容的指纹。
-        const sourceTextHash = await createPageContentHash(pageContent);
-
-        // 查找这条收藏已保存的摘要。
-        const cachedRecord = await getSummaryRecord(message.bookmarkId);
-
-        // 指纹一致时直接返回缓存，不请求 DeepSeek。
-        if (cachedRecord?.sourceTextHash === sourceTextHash) {
-          return cachedRecord.summary; // 将缓存摘要交给后面的成功回复。
-        }
-
-        // 缓存不存在或网页内容已变化时，请求新摘要。
-        const summary = await requestSummary(pageContent);
-
-        // 保存新摘要，供之后重复查看时使用。
-        await saveSummaryRecord({
-          bookmarkId: message.bookmarkId, // 当前收藏的 ID。
-          summary, // 新生成的摘要。
-          sourceTextHash, // 与这次网页内容对应的指纹。
-          generatedAt: Date.now(), // 摘要生成的时间。
-        });
-
-        // 将新摘要交给后面的成功回复。
-        return summary;
-      })
-        // 后端成功返回摘要时，回复侧边栏。
-        .then((summary) => {
-          // 按约定的成功格式返回摘要。
-          sendResponse({ success: true, summary });
-        })
-        // 网页读取或摘要请求失败时，回复错误。
-        .catch((error) => {
-          // 按约定的失败格式返回错误文字。
-          sendResponse({
-            success: false, // 表示本次生成失败。
-            error: error instanceof Error ? error.message : "摘要生成失败", // 给侧边栏的提示。
-          });
-        });
-      // 保持消息通道开启，等待上述异步操作完成后再回复。
       return true;
     }
 
