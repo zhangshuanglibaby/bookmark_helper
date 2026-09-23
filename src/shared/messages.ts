@@ -43,3 +43,18 @@ export type ArchaeologyListResponse =
     // 便于在侧边栏显示的错误信息。
     error: string;
   };
+
+// 定义后台删除收藏后返回的结果。
+export type DeleteBookmarkResponse =
+  // 删除成功时返回。
+  | {
+    // 告诉侧边栏：Chrome 已成功删除收藏。
+    success: true;
+  }
+  // 删除失败时返回。
+  | {
+    // 告诉侧边栏：收藏没有成功删除。
+    success: false;
+    // 保存失败原因，供页面显示。
+    error: string;
+  };
