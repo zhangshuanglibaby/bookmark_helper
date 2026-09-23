@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 // 引入默认设置和本地设置读取函数。
-import { DEFAULT_SETTINGS, loadSettings } from "../shared/settings";
+import { DEFAULT_SETTINGS, loadSettings, saveSettings } from "../shared/settings";
 
 
 // 定义整理天数设置组件。
@@ -25,6 +25,35 @@ function Settings() {
       });
   }, []);
 
+  // 保存操作进行时，用它禁用按钮，避免重复提交。
+  const [isSaving, setIsSaving] = useState(false);
+
+  // 保存成功或失败后，向用户显示结果。
+  const [saveMessage, setSaveMessage] = useState("");
+
+  // 用户点击保存按钮时执行。
+  async function handleSaveSettings(): Promise<void> {
+    // 标记为正在保存，并清除上一次的提示。
+    setIsSaving(true);
+    setSaveMessage("");
+
+    // 尝试把输入框中的天数保存到本地。
+    try {
+
+      // 将输入文字转换为数字；无效数字会被保存函数拒绝。
+      await saveSettings({ archaeologyAgeDays: Number(ageDays) });
+
+      // 保存成功后显示提示。
+      setSaveMessage("设置已保存");
+    } catch (error) {
+      // 保存失败时显示具体原因。
+      setSaveMessage(error instanceof Error ? error.message : "保存设置失败");
+    } finally {
+      // 保存结束后，重新启用按钮。
+      setIsSaving(false);
+    }
+  }
+
   // 返回设置界面。
   return (
     <section aria-label="整理范围设置">
@@ -40,6 +69,14 @@ function Settings() {
         value={ageDays}
         onChange={(event) => setAgeDays(event.target.value)}
       />
+      {/* 点击后保存输入的整理天数；保存期间不能重复点击。 */}
+      <button type="button" onClick={handleSaveSettings} disabled={isSaving}>
+        {/* 根据保存状态显示按钮文字。 */}
+        {isSaving ? "保存中..." : "保存"}
+      </button>
+
+      {/* 显示保存成功或失败的结果。 */}
+      {saveMessage && <p role="status">{saveMessage}</p>}
     </section>
   );
 }
