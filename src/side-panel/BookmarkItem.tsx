@@ -5,7 +5,7 @@ import { useState } from "react";
 import type { BookmarkRecord } from "../shared/types";
 
 // 引入侧边栏发送给后台的消息类型，以及后台返回的摘要结果类型。
-import type { ExtensionMessage， SummaryResponse } from "../shared/messages";
+import type { ExtensionMessage, SummaryResponse } from "../shared/messages";
 
 
 // 定义这个组件需要接收的数据。
@@ -46,15 +46,6 @@ function getDomain(url: string): string {
   }
 }
 
-// 记录摘要目前是未请求、生成中、成功还是失败。
-const [summaryStatus, setSummaryStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-
-// 保存成功生成的摘要文字。
-const [summary, setSummary] = useState("");
-
-// 保存摘要生成失败时要显示的提示。
-const [summaryError, setSummaryError] = useState("");
-
 // 定义单条收藏的展示组件。
 /**
  * 定义单条收藏的展示组件。
@@ -62,6 +53,16 @@ const [summaryError, setSummaryError] = useState("");
  * @returns 单条收藏的展示组件
  */
 function BookmarkItem({ bookmark }: BookmarkItemProps) {
+
+  // 记录摘要目前是未请求、生成中、成功还是失败。
+  const [summaryStatus, setSummaryStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  // 保存成功生成的摘要文字。
+  const [summary, setSummary] = useState("");
+
+  // 保存摘要生成失败时要显示的提示。
+  const [summaryError, setSummaryError] = useState("");
+
   // 提取网页所属的网站域名。
   const domain = getDomain(bookmark.url);
 
