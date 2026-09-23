@@ -75,6 +75,15 @@ function App() {
     loadArchaeologyList();
   }, []);
 
+  // 后台确认删除成功后，从页面清单中移除对应收藏。
+  function handleBookmarkDeleted(bookmarkId: string) {
+    // 根据最新的收藏列表，过滤掉 ID 相同的那一条。
+    setBookmarks((currentBookmarks) =>
+      // 保留其他收藏，页面上的数量也会随之更新。
+      currentBookmarks.filter((bookmark) => bookmark.bookmarkId !== bookmarkId),
+    );
+  }
+
 
 
   return (
@@ -96,7 +105,8 @@ function App() {
           <p>需要整理的收藏：{bookmarks.length} 条</p>
 
           {/* 将全部待整理收藏传给长清单组件。 */}
-          <ArchaeologyList bookmarks={bookmarks} />
+          {/* 将删除成功后的页面更新函数传给清单。 */}
+          <ArchaeologyList bookmarks={bookmarks} onDeleted={handleBookmarkDeleted} />
         </>
       )}
     </main>

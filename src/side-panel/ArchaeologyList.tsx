@@ -8,10 +8,12 @@ import BookmarkItem from "./BookmarkItem";
 interface ArchaeologyListProps {
   // 需要展示的全部待整理收藏。
   bookmarks: BookmarkRecord[];
+  // 删除成功后，通知上层页面移除对应收藏。
+  onDeleted?: (bookmarkId: string) => void;
 }
 
 // 定义“待整理收藏长清单”组件。
-function ArchaeologyList({ bookmarks }: ArchaeologyListProps) {
+function ArchaeologyList({ bookmarks, onDeleted }: ArchaeologyListProps) {
   // 没有待整理收藏时，显示空状态。
   if (bookmarks.length === 0) {
     return (
@@ -34,6 +36,8 @@ function ArchaeologyList({ bookmarks }: ArchaeologyListProps) {
           key={bookmark.bookmarkId}
           // 将当前这一条收藏数据传给单条收藏组件。
           bookmark={bookmark}
+          // 把删除成功后的通知函数传给单条收藏。
+          onDeleted={onDeleted}
         />
       ))}
     </section>
