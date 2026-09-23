@@ -43,3 +43,19 @@ export interface PageContent {
   // 实际读取的网页网址。
   url: string;
 }
+
+// 定义一条已经生成完成的 AI 摘要记录。
+export interface SummaryRecord {
+  // 对应的 Chrome 收藏 ID。
+  bookmarkId: string;
+
+  // AI 为这条收藏生成的一句话中文摘要。
+  summary: string;
+
+  // 网页内容生成的标识。
+  // 后续网页内容变化时，用它判断旧摘要是否还能继续使用。
+  sourceTextHash: string;
+
+  // 这条摘要生成完成的时间。
+  generatedAt: number;
+}
