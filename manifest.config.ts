@@ -22,7 +22,9 @@ const manifest: ManifestV3Export = {
     // 允许后台管理临时打开的浏览器标签页。
     "tabs",
     // 允许扩展向网页注入正文读取脚本。
-    "scripting"
+    "scripting",
+    // 允许扩展在浏览器本地保存摘要缓存和后续的用户配置。
+    "storage"
   ],
   // 声明扩展允许访问的网页范围。
   host_permissions: [
