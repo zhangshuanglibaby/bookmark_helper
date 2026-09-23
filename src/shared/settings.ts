@@ -1,3 +1,7 @@
+/**
+ * 整理时间阈值设置功能
+ */
+
 // 引入用户设置的数据类型。
 import type { UserSettings } from "./types";
 
@@ -23,4 +27,16 @@ export async function loadSettings(): Promise<UserSettings> {
 
   // 没有有效设置时，返回默认的 180 天。
   return DEFAULT_SETTINGS;
+}
+
+// 将用户选择的整理天数保存到扩展本地。
+export async function saveSettings(settings: UserSettings): Promise<void> {
+  // 检查整理天数是否为大于零的整数。
+  if (!Number.isSafeInteger(settings.archaeologyAgeDays) || settings.archaeologyAgeDays <= 0) {
+    // 无效的天数不写入本地存储。
+    throw new Error("整理天数必须是大于 0 的整数");
+  }
+
+  // 使用与读取函数相同的 userSettings 名称保存设置。
+  await chrome.storage.local.set({ userSettings: settings });
 }
