@@ -59,3 +59,20 @@ export interface SummaryRecord {
   // 这条摘要生成完成的时间。
   generatedAt: number;
 }
+
+// 定义用户填写的 AI 服务配置。
+export interface UserSettings {
+  // AI 服务接口的基础地址。
+  // 例如：https://api.openai.com/v1
+  aiBaseUrl: string;
+
+  // 调用 AI 服务所需的 API 密钥。
+  aiApiKey: string;
+
+  // 要使用的 AI 模型名称。
+  // 例如：gpt-5-mini
+  aiModel: string;
+
+  // 一条收藏被视为“旧收藏”所需经过的天数。
+  archaeologyAgeDays: number;
+}
