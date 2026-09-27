@@ -13,6 +13,18 @@ import type { ExtensionMessage } from "../shared/messages";
 // 引入读取整理天数设置的函数。
 import { loadSettings } from "../shared/settings";
 
+// 配置插件工具栏图标的点击行为。
+chrome.sidePanel
+  // 点击插件图标时，自动打开右侧边栏。
+  .setPanelBehavior({
+    openPanelOnActionClick: true,
+  })
+  // 如果当前 Chrome 不支持该设置，记录错误方便排查。
+  .catch((error) => {
+    // 输出配置失败的原因。
+    console.error("配置工具栏图标行为失败：", error);
+  });
+
 // 在扩展安装或更新后，读取一次收藏夹。
 // 现在先把数量输出到后台控制台，用来验证读取功能是否正常。
 // chrome.runtime.onInstalled.addListener 是 Chrome 扩展开发中用来监听‌扩展安装、更新或浏览器更新‌等事件的核心 API，常用于执行一次性初始化任务
