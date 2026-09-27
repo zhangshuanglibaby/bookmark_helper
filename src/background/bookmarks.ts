@@ -101,29 +101,30 @@ export async function readAllBookmarks(): Promise<BookmarkRecord[]> {
 }
 
 
-// 判断一条收藏是否已经超过指定天数。
+// 判断一条收藏是否已经超过指定天数没有访问。
 /**
- * 
+ * 判断收藏是否属于长期未访问收藏。
  * @param bookmark 收藏记录
- * @param ageDays 指定天数
- * @returns 是否超过指定天数
+ * @param ageDays 连续未访问的天数阈值
+ * @returns 是否应该进入整理清单
  */
 function isOlderThan(bookmark: BookmarkRecord, ageDays: number): boolean {
-  // 没有收藏时间时，无法判断它是否超过指定天数。
-  // 因此暂时不将它放入考古清单。
-  if (bookmark.dateAdded === null) {
-    return false;
+  // 没有最近访问记录，表示这条收藏从未被记录为访问过。
+  // 按产品规则，这类收藏直接进入整理清单。
+  if (bookmark.dateLastUsed === null) {
+    return true;
   }
 
-  // 将“天数”转换为毫秒。
-  // 1 天 = 24 小时，每小时 60 分钟，每分钟 60 秒，每秒 1000 毫秒。
-  const ageInMilliseconds = ageDays * 24 * 60 * 60 * 1000;
+  // 将“未访问天数”转换为毫秒。
+  // 1 天等于 24 小时、60 分钟、60 秒和 1000 毫秒。
+  const inactiveTimeInMilliseconds = ageDays * 24 * 60 * 60 * 1000;
 
-  // 计算“早于这个时间的收藏就算旧收藏”的时间点。
-  const cutoffTime = Date.now() - ageInMilliseconds;
+  // 计算允许的最后访问时间。
+  // 早于这个时间访问过，说明已经超过指定天数没有访问。
+  const cutoffTime = Date.now() - inactiveTimeInMilliseconds;
 
-  // 收藏时间早于临界时间，说明它已经超过指定天数。
-  return bookmark.dateAdded < cutoffTime;
+  // 最近访问时间早于临界时间，说明这条收藏长期没有访问。
+  return bookmark.dateLastUsed < cutoffTime;
 }
 
 
