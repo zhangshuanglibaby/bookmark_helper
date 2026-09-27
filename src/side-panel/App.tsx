@@ -17,7 +17,7 @@ import ArchaeologyList from "./ArchaeologyList";
 import Settings from "./Settings";
 
 
-// 定义“收藏夹整理助手”的侧边栏主界面组件。
+// 定义“收藏夹考古助手”的侧边栏主界面组件。
 function App() {
 
   // 保存后台返回的待整理收藏列表。
@@ -96,7 +96,7 @@ function App() {
     // main 表示页面最主要的内容区域。
     <main>
       {/* 显示侧边栏的主标题。 */}
-      <h1>收藏夹整理助手</h1>
+      <h1>收藏夹考古助手</h1>
 
       {/* 在清单上方显示整理天数设置。 */}
       {/* 设置保存成功后，增加计数以触发清单重新读取。 */}
