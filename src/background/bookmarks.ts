@@ -128,39 +128,41 @@ function isOlderThan(bookmark: BookmarkRecord, ageDays: number): boolean {
 }
 
 
-// 按“最近访问时间最早”的规则排序收藏。
+// 按“长期未访问程度”从前到后排序收藏。
 /**
- * 
+ * 从未访问的收藏优先。
+ * 有访问记录的收藏，再按照最近访问时间从早到晚排列。
  * @param firstBookmark 第一条收藏
  * @param secondBookmark 第二条收藏
- * @returns 排序结果，负数表示 firstBookmark 排在 secondBookmark 之前，正数表示 firstBookmark 排在 secondBookmark 之后，0 表示两者相等
+ * @returns 排序结果
  */
 function sortByOldestVisit(
   firstBookmark: BookmarkRecord,
   secondBookmark: BookmarkRecord,
 ): number {
   // 取出第一条收藏的最近访问时间。
-  // 没有最近访问时间时，使用收藏时间作为排序依据。
-  const firstTime =
-    firstBookmark.dateLastUsed ?? firstBookmark.dateAdded;
+  const firstLastUsed = firstBookmark.dateLastUsed;
 
   // 取出第二条收藏的最近访问时间。
-  // 没有最近访问时间时，使用收藏时间作为排序依据。
-  const secondTime =
-    secondBookmark.dateLastUsed ?? secondBookmark.dateAdded;
+  const secondLastUsed = secondBookmark.dateLastUsed;
 
-  // 如果第一条连收藏时间都没有，将它排在后面。
-  if (firstTime === null) {
-    return 1;
+  // 两条收藏都从未访问时，保持它们原本的相对顺序。
+  if (firstLastUsed === null && secondLastUsed === null) {
+    return 0;
   }
 
-  // 如果第二条连收藏时间都没有，将它排在后面。
-  if (secondTime === null) {
+  // 第一条从未访问时，让它排在前面。
+  if (firstLastUsed === null) {
     return -1;
   }
 
-  // 时间数字较小代表时间更早，因此排在前面。
-  return firstTime - secondTime;
+  // 第二条从未访问时，让第一条排在前面。
+  if (secondLastUsed === null) {
+    return 1;
+  }
+
+  // 两条都有访问记录时，最近访问时间更早的排在前面。
+  return firstLastUsed - secondLastUsed;
 }
 
 
