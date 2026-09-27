@@ -68,12 +68,20 @@ export async function readAllBookmarks(): Promise<BookmarkRecord[]> {
       const cleanTitle = node.title.trim();
       // 有 url 的节点是网页收藏，需要加入最终结果。
       if (node.url) {
+        // 获取插件内部的 favicon 服务地址。
+        const faviconUrl = chrome.runtime.getURL("_favicon/");
+
+        // 拼接当前收藏网页地址和图标尺寸参数。
+        const faviconRequestUrl = `${faviconUrl}?pageUrl=${encodeURIComponent(node.url)}&size=32`;
+
+
         records.push({
           bookmarkId: node.id, // 保存 Chrome 分配给这条收藏的唯一 ID。
           parentId: node.parentId ?? "", // 保存这条收藏所在文件夹的 ID。
           folderPath: folderPath.join(" / "), // 将文件夹数组拼接为便于展示的路径文字。如：书签栏 / 前端学习 / React
           title: cleanTitle || node.url, // 标题为空时，暂时使用网址作为标题。
           url: node.url, // // 保存网页的网址。
+          faviconUrl: faviconRequestUrl, // 保存当前收藏对应的 favicon 请求地址。
           dateAdded: node.dateAdded ?? null, // 保存收藏被添加的时间；Chrome 没有提供时使用 null。
           dateLastUsed: node.dateLastUsed ?? null, // 保存最近访问时间；没有记录时使用 null。
           status: "pending", // 新读取到的收藏默认处于“待处理”状态。

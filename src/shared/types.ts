@@ -13,6 +13,9 @@ export interface BookmarkRecord {
   title: string;
   // 收藏网页的网址。
   url: string;
+  // 网站 favicon 图标的地址。
+  // 后续会根据收藏网址生成这个地址。
+  faviconUrl?: string;
   // 收藏被添加到浏览器中的时间。
   // null 表示浏览器没有提供这个时间。
   dateAdded: number | null;

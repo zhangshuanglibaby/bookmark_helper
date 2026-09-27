@@ -22,7 +22,9 @@ const manifest: ManifestV3Export = {
     // 允许后台打开用户主动选择的收藏网页。
     "tabs",
     // 允许扩展在浏览器本地保存后续的整理状态和用户配置。
-    "storage"
+    "storage",
+    // 允许扩展访问浏览器中的网页图标。
+    "favicon"
   ],
   // 配置 Chrome 侧边栏页面。
   side_panel: {

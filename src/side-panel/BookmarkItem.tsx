@@ -126,6 +126,16 @@ function BookmarkItem({ bookmark, onDeleted }: BookmarkItemProps) {
   return (
     // article 表示一条独立、完整的收藏内容。
     <article>
+      {/* 显示当前收藏网站的 favicon 图标。 */}
+      <img
+        // 使用后台根据收藏网址生成的图标地址。
+        src={bookmark.faviconUrl}
+        // 图标加载失败时，不显示多余的替代文字。
+        alt=""
+        // 设置固定尺寸，避免图标影响列表布局。
+        width={20}
+        height={20}
+      />
       {/* 显示网页标题。 */}
       <h2>{bookmark.title}</h2>
 
