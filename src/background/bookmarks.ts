@@ -5,6 +5,9 @@
 // 引入我们定义好的收藏记录数据类型。
 import type { BookmarkRecord } from "../shared/types";
 
+// 引入查询浏览历史中最近访问时间的函数。
+import { getLastHistoryVisit } from "./history";
+
 // 读取 Chrome 中全部收藏夹，并转换为程序使用的收藏记录数组。
 export async function readAllBookmarks(): Promise<BookmarkRecord[]> {
   /**
@@ -104,6 +107,24 @@ export async function readAllBookmarks(): Promise<BookmarkRecord[]> {
   }
   // 从收藏夹树的最顶层开始遍历。
   walk(bookmarkTree, []);
+
+  // 每次最多同时查询 20 条收藏，避免一次发起过多历史记录请求。
+  const batchSize = 20;
+
+  // 分批处理所有收藏。
+  for (let start = 0; start < records.length; start += batchSize) {
+    // 取出当前这一批收藏。
+    const batch = records.slice(start, start + batchSize);
+
+    // 等待这一批收藏的历史记录查询全部完成。
+    await Promise.all(
+      // 对这一批中的每条收藏查询最近访问时间。
+      batch.map(async (record) => {
+        // 用浏览历史中的访问时间替换原先只记录“从书签打开”的时间。
+        record.dateLastUsed = await getLastHistoryVisit(record.url);
+      }),
+    );
+  }
   // 返回全部读取到的网页收藏。
   return records;
 }

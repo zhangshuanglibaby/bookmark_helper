@@ -32,6 +32,20 @@ function formatBookmarkDate(timestamp: number | null): string {
   return new Intl.DateTimeFormat("zh-CN").format(new Date(timestamp));
 }
 
+// 将最近访问时间转换为“多少天前”。
+function formatRelativeVisitDate(timestamp: number | null): string {
+  // 没有可用的浏览历史时，不推断用户一定从未访问。
+  if (timestamp === null) return "暂无浏览记录";
+  // 计算从访问时间到现在经过了多少个完整的 24 小时。
+  const daysAgo = Math.max(0, Math.floor((Date.now() - timestamp) / (24 * 60 * 60 * 1000)));
+
+  // 不满一天时显示“今天”。
+  if (daysAgo === 0) return "今天";
+
+  // 其他情况显示“多少天前”。
+  return `${daysAgo}天前`;
+}
+
 // 从完整网址中提取网站域名。
 /**
  * 从完整网址中提取网站域名。
@@ -66,10 +80,9 @@ function BookmarkItem({ bookmark, onDeleted }: BookmarkItemProps) {
   // 提取网页所属的网站域名。
   const domain = getDomain(bookmark.url);
 
-  // 优先显示最近访问时间。
-  // 没有最近访问时间时，显示收藏时间。
-  const displayTime =
-    bookmark.dateLastUsed ?? bookmark.dateAdded;
+  // 最近访问时间只使用浏览器记录的实际访问时间。
+  // 如果为 null，就保留“没有访问记录”的含义，不拿收藏日期代替。
+  const displayTime = bookmark.dateLastUsed;
 
   // 用户点击“打开网页”按钮时执行这个函数。
   function handleOpenBookmark() {
@@ -145,8 +158,23 @@ function BookmarkItem({ bookmark, onDeleted }: BookmarkItemProps) {
       {/* 显示这条收藏所在的收藏夹路径。 */}
       <p>所在文件夹：{bookmark.folderPath || "未分类"}</p>
 
-      {/* 显示最近访问时间或收藏时间。 */}
-      <p>最近记录时间：{formatBookmarkDate(displayTime)}</p>
+      {/* 有浏览历史时，显示距离最近访问过去了多少天。 */}
+      {displayTime !== null ? (
+        <p>
+          {/* 这段时间确实是最近访问时间。 */}
+          最近访问：
+          {/* 鼠标悬停时显示具体访问日期。 */}
+          <span title={formatBookmarkDate(displayTime)}>
+            {formatRelativeVisitDate(displayTime)}
+          </span>
+        </p>
+      ) : bookmark.dateAdded !== null ? (
+        // 没有浏览历史但有收藏日期时，明确标为“收藏于”。
+        <p>收藏于：{formatBookmarkDate(bookmark.dateAdded)}</p>
+      ) : (
+        // 两种日期都没有时，保留缺少记录的提示。
+        <p>最近访问：暂无浏览记录</p>
+      )}
 
       {/* 删除失败时，在当前收藏条目中显示原因。 */}
       {deleteError && <p role="alert">删除失败：{deleteError}</p>}

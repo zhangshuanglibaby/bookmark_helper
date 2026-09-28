@@ -24,7 +24,9 @@ const manifest: ManifestV3Export = {
     // 允许扩展在浏览器本地保存后续的整理状态和用户配置。
     "storage",
     // 允许扩展访问浏览器中的网页图标。
-    "favicon"
+    "favicon",
+    // 允许扩展读取浏览历史，用于判断收藏网页的最近访问时间。
+    "history"
   ],
   // 配置 Chrome 侧边栏页面。
   side_panel: {
