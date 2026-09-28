@@ -17,7 +17,7 @@ function ArchaeologyList({ bookmarks, onDeleted }: ArchaeologyListProps) {
   // 没有待整理收藏时，显示空状态。
   if (bookmarks.length === 0) {
     return (
-      <section>
+      <section className="panel-empty">
         {/* 显示没有需要整理收藏时的提示。 */}
         <p>已经没有需要整理的收藏了。</p>
       </section>
@@ -26,7 +26,7 @@ function ArchaeologyList({ bookmarks, onDeleted }: ArchaeologyListProps) {
 
   return (
     // section 表示页面中的“待整理收藏清单”区域。
-    // className 方便我们后续为它添加长卡片和滚动样式。
+    // className 用于设置独立滚动和条目分隔线。
     <section className="archaeology-list">
       {/* 将收藏数组逐条转换为 BookmarkItem 组件。 */}
       {bookmarks.map((bookmark) => (

@@ -2,6 +2,9 @@
 // useState 用来保存会变化的数据。
 // useEffect 用来在页面首次打开时执行读取操作。
 import { useEffect, useState } from "react";
+// 使用统一的线性图标，方便日后替换或调整。
+// import { FolderClosed, Settings2, X } from "lucide-react";
+// import { FolderClosed } from "lucide-react";
 // 引入收藏记录的数据类型。
 import type { BookmarkRecord } from "../shared/types";
 // 引入侧边栏请求和后台响应的数据类型。
@@ -92,35 +95,53 @@ function App() {
 
 
 
-  return (
-    // main 表示页面最主要的内容区域。
-    <main>
-      {/* 显示侧边栏的主标题。 */}
-      <h1>收藏夹考古助手</h1>
+  // // 将焦点移到设置输入框，便于通过顶部设置图标快速修改天数。
+  // function focusSettings() {
+  //   document.getElementById("age-days")?.focus();
+  // }
 
-      {/* 在清单上方显示整理天数设置。 */}
-      {/* 设置保存成功后，增加计数以触发清单重新读取。 */}
+  // // 关闭当前浏览器窗口中的扩展侧边栏。
+  // async function closePanel() {
+  //   try {
+  //     // 在扩展环境里取得当前窗口，并请求 Chrome 关闭侧边栏。
+  //     const currentWindow = await chrome.windows.getCurrent();
+  //     if (currentWindow.id === undefined) return;
+  //     await chrome.sidePanel.close({ windowId: currentWindow.id });
+  //   } catch (error) {
+  //     // 关闭失败时保留侧边栏，并在控制台记录原因。
+  //     console.error("关闭侧边栏失败：", error);
+  //   }
+  // }
+
+  return (
+    // 主界面分成固定顶部、设置栏和可滚动的结果区域。
+    <main className="side-panel">
+      {/* <header className="panel-header">
+        <div className="panel-brand">
+          <FolderClosed className="panel-brand__icon" aria-hidden="true" />
+          <div className="panel-brand__text">
+            <h1>收藏夹考古</h1>
+            <p>找回那些被遗忘的好网站</p>
+          </div>
+        </div>
+      </header> */}
+
+      {/* 保存设置后重新向后台读取符合新条件的清单。 */}
       <Settings onSaved={() => setReloadCount((count) => count + 1)} />
 
-      {/* 正在读取时，显示加载提示。 */}
-      {isLoading && <p>正在读取收藏夹...</p>}
-
-      {/* 读取失败时，显示错误信息。 */}
-      {errorMessage && <p>读取失败：{errorMessage}</p>}
-
-      {/* 读取成功后，显示数量和待整理收藏长清单。 */}
-      {!isLoading && !errorMessage && (
-        <>
-          {/* 显示当前需要整理的收藏总数量。 */}
-          <p>需要整理的收藏：{bookmarks.length} 条</p>
-
-          {/* 将全部待整理收藏传给长清单组件。 */}
-          {/* 将删除成功后的页面更新函数传给清单。 */}
-          <ArchaeologyList bookmarks={bookmarks} onDeleted={handleBookmarkDeleted} />
-        </>
-      )}
+      {/* 结果区域独立滚动，顶部的设置始终留在原位。 */}
+      <div className="panel-results">
+        {isLoading && <p className="panel-state" role="status">正在读取收藏夹...</p>}
+        {errorMessage && <p className="panel-state panel-state--error" role="alert">读取失败：{errorMessage}</p>}
+        {!isLoading && !errorMessage && (
+          <>
+            <p className="results-count">共 {bookmarks.length} 条结果</p>
+            <ArchaeologyList bookmarks={bookmarks} onDeleted={handleBookmarkDeleted} />
+          </>
+        )}
+      </div>
     </main>
-  )
+  );
 }
 
 // 导出组件，供 sidepanel/main.tsx 使用。

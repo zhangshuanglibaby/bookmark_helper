@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="收藏夹考古助手">
+  <rect width="128" height="128" rx="25" fill="#1557F0"/>
+  <path d="M35 23h45a6 6 0 0 1 6 6v67L61 80 35 96V29a6 6 0 0 1 6-6Z" fill="#fff"/>
+  <path d="M91 83l13 13" fill="none" stroke="#FFC45A" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="76" cy="67" r="19" fill="#1557F0" stroke="#FFC45A" stroke-width="8"/>
+</svg>

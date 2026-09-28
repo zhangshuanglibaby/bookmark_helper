@@ -8,11 +8,17 @@ const manifest: ManifestV3Export = {
   // 表示使用 Chrome 扩展的 Manifest V3 规范。
   manifest_version: 3,
   // 扩展在 Chrome 扩展管理页显示的名称。
-  name: "收藏夹考古助手",
+  name: "收藏夹考古 - 找回那些被遗忘的好网站",
   // 扩展当前版本号。以后每次发布更新时可以增加它。
   version: "0.1.0",
   // 扩展在 Chrome 扩展管理页显示的简介。
-  description: "一款帮助用户重新查看和清理长期未使用收藏的网站的 Chrome 浏览器扩展",
+  description: "【收藏夹考古】是一款帮助用户重新查看和清理长期未访问收藏的网站的 Chrome 浏览器扩展。插件从浏览器收藏夹中筛选长期未处理的网页，以一张连续的“整理清单”展示。用户查看标题、域名、收藏夹路径和时间信息，按需打开原网页，删除不再需要的收藏；",
+  icons: {
+    16: "logo-16.png",
+    32: "logo-32.png",
+    48: "logo-48.png",
+    128: "logo-128.png",
+  },
   // 声明扩展需要使用的 Chrome 浏览器权限。
   permissions: [
     // 允许扩展使用 Chrome 右侧边栏功能。
@@ -46,6 +52,12 @@ const manifest: ManifestV3Export = {
   action: {
     // 鼠标悬停在扩展图标上时显示的文字。
     default_title: "打开收藏夹考古助手",
+    default_icon: {
+      16: "logo-16.png",
+      32: "logo-32.png",
+      48: "logo-48.png",
+      128: "logo-128.png",
+    },
   },
 };
 

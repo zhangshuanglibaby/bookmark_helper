@@ -1,168 +1,402 @@
-/* 让页面尺寸计算更稳定，元素的内边距不会额外撑大宽高。 */
+/* 统一元素尺寸算法，防止窄侧边栏出现横向溢出。 */
 * {
-    box-sizing: border-box;
-  }
-  
-  /* 设置整个侧边栏页面的基础外观。 */
-  body {
-    /* 移除浏览器默认外边距。 */
-    margin: 0;
-  
-    /* 使用易读的系统字体。 */
-    font-family:
-      -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  
-    /* 设置页面背景色。 */
-    background: #f6f7f9;
-  
-    /* 设置主要文字颜色。 */
-    color: #1f2937;
-  }
-  
-  /* 设置 React 应用占满侧边栏可用高度。 */
-  #root {
-    min-height: 100vh;
-  }
-  
-  /* 设置侧边栏主要内容区域。 */
-  main {
-    /* 让标题、数量和清单从上到下排列。 */
-    display: flex;
-    flex-direction: column;
-  
-    /* 让页面至少占满整个侧边栏高度。 */
-    min-height: 100vh;
-  
-    /* 设置页面四周留白。 */
-    padding: 20px;
-  }
-  
-  /* 设置主标题样式。 */
-  h1 {
-    /* 移除浏览器默认外边距。 */
-    margin: 0;
-  
-    /* 设置标题字号。 */
-    font-size: 22px;
-  
-    /* 设置标题行高。 */
-    line-height: 1.3;
-  }
-  
-  /* 设置标题下方的数量文字样式。 */
-  h1 + p {
-    /* 设置标题与数量之间的间距。 */
-    margin: 8px 0 16px;
-  
-    /* 设置数量文字颜色。 */
-    color: #5f6b7a;
-  
-    /* 设置数量文字字号。 */
-    font-size: 14px;
-  }
-  
-  /* 设置待整理收藏的长卡片容器。 */
-  .archaeology-list {
-    /* 让这个区域占用剩余高度。 */
-    flex: 1;
-  
-    /* 内容过多时，只在卡片内部显示纵向滚动条。 */
-    overflow-y: auto;
-  
-    /* 设置卡片背景。 */
-    background: #ffffff;
-  
-    /* 设置细边框。 */
-    border: 1px solid #d9dee7;
-  
-    /* 使用较小圆角，使界面更适合工具型产品。 */
-    border-radius: 8px;
-  }
-  
-  /* 设置每一条收藏的展示区域。 */
-  .archaeology-list > article {
-    /* 设置每条收藏内部留白。 */
-    padding: 16px;
-  
-    /* 使用底部边框分隔相邻收藏。 */
-    border-bottom: 1px solid #e8ebf0;
-  }
-  
-  /* 移除最后一条收藏的底部边框。 */
-  .archaeology-list > article:last-child {
-    border-bottom: 0;
-  }
-  
-  /* 设置单条收藏标题样式。 */
-  .archaeology-list h2 {
-    /* 移除标题默认外边距。 */
-    margin: 0 0 8px;
-  
-    /* 设置适合清单条目的标题字号。 */
-    font-size: 16px;
-  
-    /* 设置标题行高。 */
-    line-height: 1.45;
-  }
-  
-  /* 设置单条收藏中的普通说明文字。 */
-  .archaeology-list p {
-    /* 设置文字之间的垂直间距。 */
-    margin: 4px 0;
-  
-    /* 设置辅助文字字号。 */
-    font-size: 13px;
-  
-    /* 设置辅助文字颜色。 */
-    color: #5f6b7a;
-  
-    /* 过长的网址或文件夹名称可以自动换行。 */
-    overflow-wrap: anywhere;
+  box-sizing: border-box;
+}
+
+/* 使用清爽的白底和偏冷的中性色，蓝色只强调主要操作。 */
+body {
+  margin: 0;
+  color: #172234;
+  background: #f5f7fa;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* 让侧边栏的清单拥有独立的可滚动空间。 */
+#root {
+  height: 100vh;
+}
+
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-width: 0;
+  padding: 24px 20px 0;
+  overflow: hidden;
+  border: 1px solid #dce3ec;
+  border-bottom: 0;
+  border-radius: 16px 16px 0 0;
+  background: #fff;
+}
+
+/* 标题和右侧的两个图标按钮始终排在一行。 */
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex: none;
+  margin-bottom: 12px;
+}
+
+.panel-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.panel-brand__icon {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  color: #121820;
+  stroke-width: 2.1;
+}
+
+.panel-brand__text {
+  min-width: 0;
+}
+
+.panel-brand h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.panel-brand p {
+  margin: 5px 0 0;
+  color: #667992;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.panel-header__actions {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+
+/* 所有纯图标按钮都采用固定点击尺寸和可见的键盘焦点。 */
+.icon-button,
+.bookmark-actions button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #385277;
+  cursor: pointer;
+}
+
+.icon-button svg,
+.bookmark-actions svg {
+  width: 15px;
+  height: 15px;
+}
+
+.icon-button:hover,
+.bookmark-actions button:hover {
+  background: #edf3fb;
+  color: #155ad6;
+}
+
+.bookmark-actions button:last-child:hover {
+  background: #fff0f0;
+  color: #c93b44;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #145cff;
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* 设置栏是一条连续的筛选带，内容在窄屏可自然换行。 */
+.settings-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  flex: none;
+  min-width: 0;
+  padding: 12px 16px;
+  border: 1px solid #dfe7f2;
+  border-radius: 8px;
+  background: #f0f6fe;
+}
+
+.settings-bar__fields {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-width: 0;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.settings-bar__number {
+  display: flex;
+  align-items: center;
+  width: 72px;
+  height: 36px;
+  padding: 0 8px 0 11px;
+  border: 1px solid #ccd7e5;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.settings-bar__number:focus-within {
+  border-color: #145cff;
+}
+
+.settings-bar__number input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #172234;
+  font: inherit;
+}
+
+.settings-bar__number input::-webkit-inner-spin-button,
+.settings-bar__number input::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.settings-bar__number span {
+  flex: none;
+  color: #62748c;
+}
+
+.settings-bar__save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #1557e8;
+  border-radius: 6px;
+  background: #1557f0;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.settings-bar__save:hover:not(:disabled) {
+  background: #0946d2;
+}
+
+.settings-bar__message {
+  flex-basis: 100%;
+  margin: 0;
+  color: #526985;
+  font-size: 12px;
+}
+
+/* 数量保持可见，只有下方的收藏条目滚动。 */
+.panel-results {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding-top: 17px;
+}
+
+.results-count {
+  flex: none;
+  margin: 0 0 5px;
+  color: #6a7c93;
+  font-size: 12px;
+}
+
+.panel-state,
+.panel-empty {
+  padding: 20px 0;
+  color: #667992;
+  font-size: 14px;
+}
+
+.panel-state--error {
+  color: #b43d46;
+}
+
+.archaeology-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-color: #b8c5d5 transparent;
+  scrollbar-width: thin;
+}
+
+/* 每条收藏是清单中的一行，不额外包裹卡片。 */
+.bookmark-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 32px;
+  align-items: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px 4px 10px 0;
+  border-bottom: 1px solid #e8edf3;
+}
+
+.bookmark-row__favicon {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  object-fit: contain;
+}
+
+.bookmark-row__content {
+  min-width: 0;
+}
+
+.bookmark-row h2,
+.bookmark-row__url {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 标题和网址保持原来的文字外观，同时能用鼠标或键盘打开。 */
+.bookmark-row__open {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.bookmark-row__open:hover {
+  color: #155ad6;
+  text-decoration: underline;
+}
+
+.bookmark-row h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.bookmark-row__url {
+  margin: 1px 0 8px;
+  color: #71839b;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.bookmark-row__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  min-height: 23px;
+}
+
+.bookmark-row__folder {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  flex-shrink: 1;
+  max-width: 65%;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #f0f3f7;
+  color: #526985;
+  font-size: 12px;
+  line-height: 19px;
+}
+
+.bookmark-row__folder svg {
+  flex: none;
+}
+
+.bookmark-row__folder span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookmark-row__time {
+  overflow: hidden;
+  flex: none;
+  max-width: 55%;
+  color: #667c99;
+  font-size: 12px;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookmark-row__error {
+  margin: 7px 0 0;
+  color: #b43d46;
+  font-size: 12px;
+}
+
+.bookmark-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 9px;
+}
+
+/* 侧边栏变窄时降低留白，同时保证操作按钮不挤压标题。 */
+@media (max-width: 400px) {
+  .side-panel {
+    padding: 18px 14px 0;
   }
 
-  /* 设置每条收藏底部操作区域的布局。 */
-.bookmark-actions {
-    /* 让按钮与上方内容保持间距。 */
-    margin-top: 12px;
-  
-    /* 使用弹性布局，方便后续添加删除按钮。 */
-    display: flex;
-  
-    /* 让当前的“打开网页”按钮靠右显示。 */
-    justify-content: flex-end;
+  .panel-header {
+    margin-bottom: 12px;
   }
-  
-  /* 设置“打开网页”按钮的基础样式。 */
-  .bookmark-actions button {
-    /* 设置按钮内部留白。 */
-    padding: 7px 12px;
-  
-    /* 设置按钮边框。 */
-    border: 1px solid #2468d9;
-  
-    /* 设置较小圆角，保持工具型界面的紧凑感。 */
-    border-radius: 6px;
-  
-    /* 设置按钮背景色。 */
-    background: #2468d9;
-  
-    /* 设置按钮文字颜色。 */
-    color: #ffffff;
-  
-    /* 设置按钮文字字号。 */
-    font-size: 13px;
-  
-    /* 鼠标放上去时显示可点击的手形指针。 */
-    cursor: pointer;
+
+  .panel-brand__icon {
+    width: 18px;
+    height: 18px;
   }
-  
-  /* 鼠标悬停在按钮上时，稍微加深背景色。 */
-  .bookmark-actions button:hover {
-    background: #1d57b5;
+
+  .panel-brand h1 {
+    font-size: 19px;
   }
-  
-  /* 使用键盘选中按钮时，显示清晰的焦点轮廓。 */
-  .bookmark-actions button:focus-visible {
-    outline: 2px solid #7ca9f7;
-    outline-offset: 2px;
+
+  .panel-brand p {
+    font-size: 12px;
   }
+
+  .settings-bar {
+    padding: 10px;
+  }
+
+  .bookmark-row {
+    grid-template-columns: 20px minmax(0, 1fr) 32px;
+    gap: 8px;
+  }
+}

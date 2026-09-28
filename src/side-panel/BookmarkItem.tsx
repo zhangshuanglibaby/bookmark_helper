@@ -1,5 +1,7 @@
 // 从 React 引入状态工具，记录删除过程和错误。
 import { useState } from "react";
+// 使用线性图标呈现收藏所在文件夹和删除操作。
+import { Folder, Trash2 } from "lucide-react";
 
 // 引入一条收藏记录的数据类型。
 import type { BookmarkRecord } from "../shared/types";
@@ -46,22 +48,6 @@ function formatRelativeVisitDate(timestamp: number | null): string {
   return `${daysAgo}天前`;
 }
 
-// 从完整网址中提取网站域名。
-/**
- * 从完整网址中提取网站域名。
- * @param url 完整网址
- * @returns 网站域名
- */
-function getDomain(url: string): string {
-  try {
-    // 例如将 https://react.dev/learn 转换成 react.dev。
-    return new URL(url).hostname;
-  } catch {
-    // 如果网址格式异常，直接显示原网址。
-    return url;
-  }
-}
-
 // 定义单条收藏的展示组件。
 /**
  * 定义单条收藏的展示组件。
@@ -77,14 +63,14 @@ function BookmarkItem({ bookmark, onDeleted }: BookmarkItemProps) {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
 
-  // 提取网页所属的网站域名。
-  const domain = getDomain(bookmark.url);
-
   // 最近访问时间只使用浏览器记录的实际访问时间。
   // 如果为 null，就保留“没有访问记录”的含义，不拿收藏日期代替。
   const displayTime = bookmark.dateLastUsed;
 
-  // 用户点击“打开网页”按钮时执行这个函数。
+  // 列表只显示路径中的最后一级文件夹，完整路径留在悬停提示中。
+  const displayFolder = bookmark.folderPath.split(" / ").at(-1) || "未分类";
+
+  // 用户点击收藏标题或网址时，在新标签页打开网页。
   function handleOpenBookmark() {
     // 创建发送给后台的消息。
     const message: ExtensionMessage = {
@@ -137,59 +123,48 @@ function BookmarkItem({ bookmark, onDeleted }: BookmarkItemProps) {
 
 
   return (
-    // article 表示一条独立、完整的收藏内容。
-    <article>
-      {/* 显示当前收藏网站的 favicon 图标。 */}
-      <img
-        // 使用后台根据收藏网址生成的图标地址。
-        src={bookmark.faviconUrl}
-        // 图标加载失败时，不显示多余的替代文字。
-        alt=""
-        // 设置固定尺寸，避免图标影响列表布局。
-        width={20}
-        height={20}
-      />
-      {/* 显示网页标题。 */}
-      <h2>{bookmark.title}</h2>
-
-      {/* 显示网站域名，例如 react.dev。 */}
-      <p>{domain}</p>
-
-      {/* 显示这条收藏所在的收藏夹路径。 */}
-      <p>所在文件夹：{bookmark.folderPath || "未分类"}</p>
-
-      {/* 有浏览历史时，显示距离最近访问过去了多少天。 */}
-      {displayTime !== null ? (
-        <p>
-          {/* 这段时间确实是最近访问时间。 */}
-          最近访问：
-          {/* 鼠标悬停时显示具体访问日期。 */}
-          <span title={formatBookmarkDate(displayTime)}>
-            {formatRelativeVisitDate(displayTime)}
-          </span>
+    // 第一行让 20px 网站图标与标题并排，右侧保留删除按钮。
+    <article className="bookmark-row">
+      {/* 使用已有的收藏网站图标，不改变原来的图标获取方式。 */}
+      <img className="bookmark-row__favicon" src={bookmark.faviconUrl} alt="" width={20} height={20} />
+      <div className="bookmark-row__content">
+        {/* 标题和完整网址都能打开网页；超出可用宽度时显示省略号。 */}
+        <h2>
+          <button className="bookmark-row__open" type="button" onClick={handleOpenBookmark} title={`打开：${bookmark.title}`}>
+            {bookmark.title}
+          </button>
+        </h2>
+        <p className="bookmark-row__url">
+          <button className="bookmark-row__open" type="button" onClick={handleOpenBookmark} title={`打开：${bookmark.url}`}>
+            {bookmark.url}
+          </button>
         </p>
-      ) : bookmark.dateAdded !== null ? (
-        // 没有浏览历史但有收藏日期时，明确标为“收藏于”。
-        <p>收藏于：{formatBookmarkDate(bookmark.dateAdded)}</p>
-      ) : (
-        // 两种日期都没有时，保留缺少记录的提示。
-        <p>最近访问：暂无浏览记录</p>
-      )}
-
-      {/* 删除失败时，在当前收藏条目中显示原因。 */}
-      {deleteError && <p role="alert">删除失败：{deleteError}</p>}
-
-      {/* 放置这条收藏可执行操作的区域。 */}
+        <div className="bookmark-row__meta">
+          {/* 文件夹标签只显示最后一级，悬停时可查看完整路径。 */}
+          <span className="bookmark-row__folder" title={bookmark.folderPath || "未分类"}>
+            <Folder size={15} aria-hidden="true" />
+            <span>{displayFolder}</span>
+          </span>
+          {/* 有访问记录显示相对天数；否则明确显示收藏日期。 */}
+          {displayTime !== null ? (
+            <span className="bookmark-row__time" title={`最近访问：${formatBookmarkDate(displayTime)}`}>
+              {formatRelativeVisitDate(displayTime)}
+            </span>
+          ) : bookmark.dateAdded !== null ? (
+            <span className="bookmark-row__time" title={`暂无浏览记录，收藏于 ${formatBookmarkDate(bookmark.dateAdded)}`}>
+             {formatBookmarkDate(bookmark.dateAdded)}
+            </span>
+          ) : (
+            <span className="bookmark-row__time">暂无浏览记录</span>
+          )}
+        </div>
+        {/* 失败消息紧跟当前条目，以免误以为其他收藏删除失败。 */}
+        {deleteError && <p className="bookmark-row__error" role="alert">删除失败：{deleteError}</p>}
+      </div>
+      {/* 右侧只保留删除按钮，保持直接删除的原有行为。 */}
       <div className="bookmark-actions">
-        {/* 点击后请求后台在新标签页打开当前收藏。 */}
-        <button type="button" onClick={handleOpenBookmark}>
-          打开网页
-        </button>
-
-        {/* 点击后直接删除；等待期间禁用按钮，避免重复请求。 */}
-        <button type="button" disabled={isDeleting} onClick={handleDeleteBookmark}>
-          {/* 删除期间给出简短的状态提示。 */}
-          {isDeleting ? "删除中..." : "删除"}
+        <button type="button" disabled={isDeleting} onClick={handleDeleteBookmark} aria-label={`删除 ${bookmark.title}`} title={isDeleting ? "删除中..." : "删除收藏"}>
+          <Trash2 size={19} aria-hidden="true" />
         </button>
       </div>
     </article>

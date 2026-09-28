@@ -1,5 +1,7 @@
 // 引入副作用和状态工具，分别用于首次读取设置和更新输入框。
 import { useEffect, useState } from "react";
+// 使用筛选图标标识保存当前筛选条件的操作。
+import { Filter } from "lucide-react";
 
 // 引入默认设置和本地设置读取函数。
 import { DEFAULT_SETTINGS, loadSettings, saveSettings } from "../shared/settings";
@@ -55,6 +57,7 @@ function Settings({ onSaved }: SettingsProps) {
 
       // 保存成功后显示提示。
       setSaveMessage("设置已保存");
+      console.log(saveMessage);
     } catch (error) {
       // 保存失败时显示具体原因。
       setSaveMessage(error instanceof Error ? error.message : "保存设置失败");
@@ -66,27 +69,31 @@ function Settings({ onSaved }: SettingsProps) {
 
   // 返回设置界面。
   return (
-    <section aria-label="整理范围设置">
-      {/* 告诉用户这个数字的含义。 */}
-      <label htmlFor="age-days">收藏超过多少天后进入清单</label>
-
-      {/* 用户输入时，更新输入框中的文字。 */}
-      <input
-        id="age-days"
-        type="number"
-        min="1"
-        step="1"
-        value={ageDays}
-        onChange={(event) => setAgeDays(event.target.value)}
-      />
-      {/* 点击后保存输入的整理天数；保存期间不能重复点击。 */}
-      <button type="button" onClick={handleSaveSettings} disabled={isSaving}>
-        {/* 根据保存状态显示按钮文字。 */}
-        {isSaving ? "保存中..." : "保存"}
+    <section className="settings-bar" aria-label="整理范围设置">
+      {/* 筛选的是长期未访问的网站，而不是收藏已满多少天的网站。 */}
+      <div className="settings-bar__fields">
+        <label htmlFor="age-days">超过</label>
+        <div className="settings-bar__number">
+          <input
+            id="age-days"
+            aria-label="未访问超过多少天"
+            type="number"
+            min="1"
+            step="1"
+            value={ageDays}
+            onChange={(event) => setAgeDays(event.target.value)}
+          />
+          <span aria-hidden="true">天</span>
+        </div>
+        <span>后进入的考古数据</span>
+      </div>
+      {/* 保存期间禁用按钮，避免重复请求。 */}
+      <button className="settings-bar__save" type="button" onClick={handleSaveSettings} disabled={isSaving}>
+        <Filter size={14} aria-hidden="true" />
+        {isSaving ? "筛选中..." : "筛选"}
       </button>
-
-      {/* 显示保存成功或失败的结果。 */}
-      {saveMessage && <p role="status">{saveMessage}</p>}
+      {/* 保存结果与错误显示在设置栏下方，不挤压输入框。 */}
+      {/* {saveMessage && <p className="settings-bar__message"z role="status">{saveMessage}</p>} */}
     </section>
   );
 }
