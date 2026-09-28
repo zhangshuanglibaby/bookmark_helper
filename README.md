@@ -1,75 +1,52 @@
-# React + TypeScript + Vite
+# 收藏夹考古助手
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+找回那些被遗忘的好网站，也让不再需要的书签离开收藏夹。
 
-Currently, two official plugins are available:
+这是一个 Chrome 侧边栏插件。它根据网页的**最近访问时间**找出长期未访问的书签，方便你逐条查看、重新打开或直接删除。判断依据不是“已经收藏了多少天”。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![收藏夹考古助手侧边栏演示](./docs/images/side-panel-demo.png)
 
-## React Compiler
+> 图片使用演示书签生成，不包含真实用户的收藏夹数据。
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 可以做什么
 
-## Expanding the ESLint configuration
+- **按未访问天数筛选：**默认 180 天，可以在侧边栏顶部修改，点击“筛选”后刷新结果。
+- **查看书签信息：**显示网站图标、标题、网址、所在文件夹的最后一级，以及最近访问时间；鼠标停留在文件夹或时间上可以查看更完整的信息。
+- **重新打开网站：**点击书签标题或网址，会在新标签页打开对应网站。
+- **清理书签：**点击右侧垃圾桶，会直接从 Chrome 收藏夹删除该书签，列表数量随之更新。
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+![书签列表内容演示](./docs/images/bookmark-list-demo.png)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+> 有浏览历史时显示“多少天前”；没有可用浏览历史时显示收藏日期（若日期可用）。没有浏览历史不等于确定从未访问。
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 安装
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+目前通过本地加载的方式使用，需要安装 Chrome、Node.js 和 pnpm。
 
-```
+1. 在终端进入本仓库的 `main` 目录，执行：
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+   ```bash
+   pnpm install
+   pnpm build
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+2. 在 Chrome 地址栏打开 `chrome://extensions`。
+3. 开启右上角的“开发者模式”，点击“加载已解压的扩展程序”。
+4. 选择 `main/dist` 文件夹。安装后可以在扩展程序菜单中找到“收藏夹考古助手”。
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+后续更新代码时，重新执行 `pnpm build`，再到扩展程序页面点击该插件的刷新按钮。
 
-```
+## 使用
+
+1. 点击浏览器工具栏中的插件图标，打开右侧侧边栏。
+2. 查看清单；默认展示最近 **180 天以上未访问**，以及没有可用访问记录的书签。
+3. 想调整范围时，输入大于 0 的整数天数，点击“筛选”。设置保存在本机，重新打开侧边栏仍会生效。
+4. 点击标题或网址重新访问网站；确认不再需要的书签，点击垃圾桶删除。
+
+**删除不会弹出二次确认，也没有插件内撤销。**点击垃圾桶前请确认你确实不再需要这条书签。
+
+## 关于访问记录
+
+插件查询 Chrome 浏览历史中与书签网址匹配的访问记录；从地址栏、搜索结果等方式打开的网页也可能计入。浏览历史被清除、网址不完全相同或没有可用记录时，书签仍会进入清单，但这不代表你一定从未访问过它。此时列表会尽量展示该书签的收藏日期。
+
+插件不会为书签自动生成摘要，也不需要配置 AI 服务或后端接口。筛选天数保存在 Chrome 的本地扩展存储中。
